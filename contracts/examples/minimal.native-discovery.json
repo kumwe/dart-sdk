@@ -32,8 +32,5 @@
     "default_locale": "en",
     "supported_locales": ["en", "de", "af"]
   },
-  "capabilities": [
-    "kumwe.core.business.generated",
-    "kumwe.core.openapi.complete"
-  ]
+  "capabilities": ["kumwe.core.business.generated"]
 }

@@ -38,7 +38,7 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Business search and cursor pagination | Observed | Closed bounded query document |
 | ETag/If-Match for business records | Observed | Strong `"vN"` preconditions |
 | Complete management request/response schemas | Missing | Most audited operations lack response content; multiple input operations lack bodies |
-| Stable problem-code registry | Proposed | Draft under `contracts/`, seeded from the 36 `urn:kumwe:problem:` type URIs observed at the audited commit |
+| Stable problem-code registry | Proposed | Draft under `contracts/`, seeded from the 40 `urn:kumwe:problem:` type URIs observed at the audited commit, including the four dynamically constructed business idempotency codes |
 | Uniform collection pagination | Proposed | Draft under `contracts/` extends the observed business cursor envelope; content remains capped at 100 without continuation |
 | Consistent idempotency semantics | Proposed | Draft under `contracts/` declares the two observed ledgers per family; the shared 24-hour text still contradicts them in core |
 | Native application authorization flow | Proposed | Draft under `contracts/` (PKCE-first, ADR 0006); core still exposes only pre-issued bearer tokens |

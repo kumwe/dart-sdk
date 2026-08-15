@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.1.0-dev.3
+
+- Complete the problem-details registry against the audited source: the four dynamically constructed
+  `business-record-idempotency-*` type URIs join the seed, bringing the observed set to 40 codes, and the
+  business-record and custom-action mutation families now declare the refusal codes and windows those routes
+  actually emit.
+- Reconcile cross-contract bounds: token, refresh and scope lengths and the token-lifetime floor now agree
+  between the native-authorization limits and the token-response wire schema, and authority-generation values
+  are constrained to the separator-free identifier set everywhere they appear.
+- Harden the Dart wiring from adversarial review: cache partitions can no longer collide through
+  authority-generation separator injection; origins are validated as true scheme-host-port origins across the
+  execution context, token requests and credential-store keys; bound sites and generation keys on access tokens
+  are validated like their wire counterparts; record-version parsing never throws on oversized versions; strong
+  entity tags match the audited core parser including the empty and obs-text forms; wire-object parsing throws
+  `FormatException` consistently; and RFC-valid `Retry-After` values with leading zeros are honored.
+
 ## 0.1.0-dev.2
 
 - Add the G1 contract-adoption package as validated machine proposals: stable problem-details registry seeded

@@ -39,6 +39,10 @@ void main() {
       () => KumweMoney.fromJson({'amount': 1.0, 'currency': 'NAD'}),
       throwsFormatException,
     );
+    expect(
+      () => KumweMoney.fromJson({'amount': '1.00', 'currency': 'nad'}),
+      throwsFormatException,
+    );
   });
 
   test('quantity binds an exact amount to a bounded portable unit', () {
@@ -57,6 +61,10 @@ void main() {
     }
     expect(
       () => KumweQuantity.fromJson({'amount': '1', 'unit': 'kg', 'x': true}),
+      throwsFormatException,
+    );
+    expect(
+      () => KumweQuantity.fromJson({'amount': '1', 'unit': '/kg'}),
       throwsFormatException,
     );
   });

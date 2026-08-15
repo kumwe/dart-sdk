@@ -1,6 +1,6 @@
 # Client-facing API
 
-## Implemented foundation (`0.1.0-dev.2`)
+## Implemented foundation (`0.1.0-dev.3`)
 
 The current pure-Dart package exports an executable protocol foundation:
 

@@ -109,6 +109,31 @@ final class KumweContextIdentifiers {
     return normalized;
   }
 
+  /// Validates and canonicalizes a true HTTPS origin.
+  ///
+  /// An origin is scheme, host and optional port only: user information,
+  /// path, query and fragment are rejected rather than dropped, so two
+  /// spellings can never alias one credential or cache partition. The
+  /// returned URI is the canonical no-path form.
+  static Uri normalizeOrigin(Uri origin, String name) {
+    if (origin.scheme != 'https' ||
+        origin.host.isEmpty ||
+        origin.userInfo.isNotEmpty ||
+        (origin.path.isNotEmpty && origin.path != '/') ||
+        origin.hasQuery ||
+        origin.hasFragment) {
+      throw ArgumentError.value(
+        origin,
+        name,
+        'Origins are an exact HTTPS scheme, host and optional port without '
+        'credentials, path, query, or fragment.',
+      );
+    }
+    return origin.hasPort
+        ? Uri(scheme: 'https', host: origin.host, port: origin.port)
+        : Uri(scheme: 'https', host: origin.host);
+  }
+
   /// Normalizes and validates a bounded IETF language tag such as `en-NA`.
   static String normalizeLocale(String value) {
     final normalized = value.trim();
@@ -148,18 +173,10 @@ final class KumweExecutionContext {
     String? correlationRoot,
     Map<String, String> authorityGenerations = const {},
   }) {
-    if (origin.scheme != 'https' ||
-        origin.host.isEmpty ||
-        origin.userInfo.isNotEmpty ||
-        origin.hasQuery ||
-        origin.hasFragment) {
-      throw ArgumentError.value(
-        origin,
-        'origin',
-        'Execution contexts bind an HTTPS origin without credentials, '
-            'query, or fragment.',
-      );
-    }
+    final canonicalOrigin = KumweContextIdentifiers.normalizeOrigin(
+      origin,
+      'origin',
+    );
     final root = correlationRoot?.trim();
     if (root != null && !_correlationPattern.hasMatch(root)) {
       throw ArgumentError.value(
@@ -172,18 +189,17 @@ final class KumweExecutionContext {
         authorityGenerations.entries.any(
           (entry) =>
               !_generationKeyPattern.hasMatch(entry.key) ||
-              entry.value.isEmpty ||
-              entry.value.length > 191,
+              !_generationValuePattern.hasMatch(entry.value),
         )) {
       throw ArgumentError.value(
         authorityGenerations,
         'authorityGenerations',
         'Authority generations are a bounded map of up to 16 identifier '
-            'keys with values of 1 to 191 characters.',
+            'keys with identifier values of 1 to 191 characters.',
       );
     }
     return KumweExecutionContext._(
-      origin: origin,
+      origin: canonicalOrigin,
       selection: selection,
       credential: credential,
       correlationRoot: root,
@@ -213,7 +229,8 @@ final class KumweExecutionContext {
 
   /// Server-supplied authority generation values used in cache identities,
   /// such as policy generation or security epoch, when the server exposes
-  /// them. Keys and values are opaque.
+  /// them. Keys and values are opaque identifiers; the identifier character
+  /// set keeps them free of the partition separators below.
   final Map<String, String> authorityGenerations;
 
   /// Site header value derived from the validated [selection].
@@ -251,5 +268,9 @@ final class KumweExecutionContext {
 
   static final RegExp _generationKeyPattern = RegExp(
     r'^[a-z0-9][a-z0-9._-]{0,63}$',
+  );
+
+  static final RegExp _generationValuePattern = RegExp(
+    r'^[A-Za-z0-9][A-Za-z0-9._:-]{0,190}$',
   );
 }

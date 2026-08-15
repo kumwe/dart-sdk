@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/problem-details-registry.schema.json",
   "proposal_id": "kumwe.problem-details.registry",
-  "proposal_version": "0.1.0-proposal.1",
+  "proposal_version": "0.1.0-proposal.2",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
@@ -245,6 +245,51 @@
       "retry_class": "after_precondition_refresh",
       "core_evidence": [
         "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSchema/Application/BusinessSchemaConflict.php"
+      ]
+    },
+    {
+      "code": "business-record-idempotency-key-reused",
+      "title": "Business idempotency key reused",
+      "summary": "The key was already used for a different request or authority on the business-record ledger; mint a new key for the new intent.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "never",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Business/BusinessRecordApiResponder.php",
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+      ]
+    },
+    {
+      "code": "business-record-idempotency-replay-window-elapsed",
+      "title": "Business replay window elapsed",
+      "summary": "The key is known but its replay window closed, so the command was refused rather than applied a second time.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "never",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+      ]
+    },
+    {
+      "code": "business-record-idempotency-in-progress",
+      "title": "Business idempotent operation in progress",
+      "summary": "The idempotent business-record operation is still executing; retry after it completes.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "after_delay",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+      ]
+    },
+    {
+      "code": "business-record-idempotency-corrupt",
+      "title": "Business idempotent outcome corrupt",
+      "summary": "The stored idempotent outcome failed integrity verification; the replay is refused.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "unspecified",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
       ]
     },
     {

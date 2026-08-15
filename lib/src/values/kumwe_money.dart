@@ -22,12 +22,17 @@ final class KumweMoney {
   ///
   /// Unknown members are rejected: the wire contract is a closed object, so an
   /// extra member indicates a contract violation rather than an extension.
+  /// Every wire violation on this path throws a [FormatException].
   factory KumweMoney.fromJson(Map<String, Object?> json) {
     final amount = json['amount'];
     final currency = json['currency'];
-    if (json.length != 2 || amount is! String || currency is! String) {
+    if (json.length != 2 ||
+        amount is! String ||
+        currency is! String ||
+        !_currencyPattern.hasMatch(currency)) {
       throw FormatException(
-        'Money is the closed {"amount", "currency"} string pair.',
+        'Money is the closed {"amount", "currency"} pair of a canonical '
+        'decimal string and a three-letter ISO 4217 code.',
         json.toString(),
       );
     }

@@ -49,10 +49,11 @@ final class EntityTag {
   final String value;
 
   /// Positive `N` when the tag uses the audited `"vN"` record form,
-  /// or `null` for any other strong tag.
+  /// or `null` for any other strong tag, including versions too large for
+  /// an exact integer.
   int? get recordVersion {
     final match = _recordPattern.firstMatch(value);
-    return match == null ? null : int.parse(match.group(1)!);
+    return match == null ? null : int.tryParse(match.group(1)!);
   }
 
   @override
@@ -64,7 +65,7 @@ final class EntityTag {
   @override
   String toString() => 'EntityTag($value)';
 
-  static final RegExp _strongPattern = RegExp(r'^"[\x21\x23-\x7E]+"$');
+  static final RegExp _strongPattern = RegExp(r'^"[\x21\x23-\x7E\x80-\xFF]*"$');
 
-  static final RegExp _recordPattern = RegExp(r'^"v([1-9][0-9]*)"$');
+  static final RegExp _recordPattern = RegExp(r'^"v([1-9][0-9]{0,17})"$');
 }
