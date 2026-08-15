@@ -1,0 +1,135 @@
+{
+  "$schema": "./schemas/mutation-semantics.schema.json",
+  "proposal_id": "kumwe.mutation-semantics",
+  "proposal_version": "0.1.0-proposal.1",
+  "status": "proposal",
+  "authoritative": false,
+  "audited_core": {
+    "repository": "kumwe/cms",
+    "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
+    "observed_at": "2026-08-15"
+  },
+  "purpose": "Make retry behavior provable by declaring idempotency, replay, late-duplicate, precondition and operation-status semantics per operation family. The audited core runs two distinct ledgers — the generic HTTP ledger replays for 24 hours while business-record commands use an application ledger with a 7-day default replay window — yet one shared header description promises 24 hours for every mutation. Adoption makes the per-family declaration the normative contract and demotes shared header prose to non-normative text; no window value below is invented, each is observed in the audited source.",
+  "key_header": "Idempotency-Key",
+  "replayed_header": "Idempotency-Replayed",
+  "families": [
+    {
+      "id": "general_http",
+      "title": "General HTTP mutations",
+      "summary": "Content, content types, workflows, navigation, identity, settings, extensions, automation and plan mutations that pass the generic persistent HTTP idempotency ledger keyed by subject, operation and key.",
+      "observed": true,
+      "idempotency": {
+        "required": true,
+        "replay_seconds": {
+          "default": 86400
+        },
+        "lease_seconds": 900,
+        "late_duplicate": "executed_as_new",
+        "refusals": [
+          "idempotency-key-required",
+          "invalid-idempotency-key",
+          "idempotency-key-reused",
+          "idempotency-in-progress",
+          "idempotency-authorization-changed"
+        ]
+      },
+      "precondition": "mixed",
+      "operation_status": false,
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Idempotency/HttpMutationPreauthorizer.php",
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry-and-concurrency-contract"
+      ]
+    },
+    {
+      "id": "business_record",
+      "title": "Generated business record commands",
+      "summary": "Create, update, delete, archive, restore, relation and document commands on generated business records; these routes bypass the generic HTTP ledger and use the application ledger with installation-configurable windows.",
+      "observed": true,
+      "idempotency": {
+        "required": true,
+        "replay_seconds": {
+          "default": 604800,
+          "minimum": 3600,
+          "maximum": 7776000
+        },
+        "retention_seconds": {
+          "default": 2592000,
+          "maximum": 31536000
+        },
+        "late_duplicate": "refused_window_elapsed",
+        "refusals": [
+          "idempotency-key-required",
+          "invalid-idempotency-key",
+          "idempotency-key-reused"
+        ]
+      },
+      "precondition": "if_match_strong_v",
+      "operation_status": true,
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php",
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/BusinessRecordService.php"
+      ]
+    },
+    {
+      "id": "custom_business_action",
+      "title": "Custom business actions",
+      "summary": "Typed custom actions published by extensions on business records; the executor keeps its own one-day replay path with the exact contract-validated input bound to the operation key.",
+      "observed": true,
+      "idempotency": {
+        "required": true,
+        "replay_seconds": {
+          "default": 86400
+        },
+        "late_duplicate": "unspecified",
+        "refusals": ["idempotency-key-reused"]
+      },
+      "precondition": "if_match_strong_v",
+      "operation_status": true,
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/CustomBusinessActionExecutor.php"
+      ]
+    },
+    {
+      "id": "business_query",
+      "title": "Business search and custom views",
+      "summary": "The bounded read-only query document and typed custom views; read-only by contract, so no idempotency key is consumed and requests are freely retryable.",
+      "observed": true,
+      "idempotency": {
+        "required": false,
+        "replay_seconds": {
+          "default": 1
+        },
+        "late_duplicate": "executed_as_new"
+      },
+      "precondition": "none",
+      "operation_status": false,
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated-business-resources"
+      ]
+    }
+  ],
+  "contradictions": [
+    "The shared OpenAPI Idempotency-Key parameter and docs/rest-api.md promise a 24-hour replay for every mutation, while the business-record application ledger defaults to 7-day replay with 30-day retention and custom actions keep a one-day path; adoption must scope each statement to its family.",
+    "The general HTTP ledger silently executes a late duplicate as a new request after its window, while the business ledger refuses it as window-elapsed; a client cannot handle both correctly without a per-family declaration.",
+    "User updates carry an optimistic version in the JSON document while content, navigation and business records use strong If-Match validators; the shared description does not say which form an operation needs."
+  ],
+  "core_evidence": [
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry-and-concurrency-contract",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Idempotency/PersistentIdempotencyMiddleware.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php"
+  ],
+  "security_invariants": [
+    "A replayed response is byte-stable except for declared replay markers and never re-contains a secret-once value.",
+    "Key reuse with different request bytes, authority, scope or definition is refused, never executed.",
+    "A replay is refused when the replaying credential differs from the credential that started the operation.",
+    "The client retains one key per user intent until a terminal outcome is known and never mints a new key because a request timed out.",
+    "Replay windows are declared by the server; a client never assumes a longer window than the family declares.",
+    "Idempotency records disclose no request or response content to later callers beyond the replayed response itself."
+  ],
+  "adoption_requirements": [
+    "CORE-API-001",
+    "CORE-API-002",
+    "CORE-MUTATION-001"
+  ]
+}

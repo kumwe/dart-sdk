@@ -1,0 +1,120 @@
+{
+  "$schema": "./schemas/native-authorization.schema.json",
+  "proposal_id": "kumwe.native-authorization",
+  "proposal_version": "0.1.0-proposal.1",
+  "status": "proposal",
+  "authoritative": false,
+  "audited_core": {
+    "repository": "kumwe/cms",
+    "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
+    "observed_at": "2026-08-15"
+  },
+  "purpose": "Give desktop and mobile applications a reviewed way for a user to sign in to Kumwe without an administrator pre-issuing a bearer token. The audited core only issues tokens through the users.manage REST route, the administrator browser and the token:create CLI, so a native client cannot bootstrap its own credential today. The proposal is OAuth 2.1 authorization code with PKCE through the system browser, with refresh rotation and revocation, binding every issued token to its site and reported context exactly as observed tokens are bound.",
+  "token_response_schema": "./schemas/native-token-response.schema.json",
+  "preferred_profile": "authorization_code_pkce",
+  "profiles": [
+    {
+      "id": "authorization_code_pkce",
+      "title": "Authorization code with PKCE",
+      "summary": "External user agent authorization at the Kumwe origin, S256 code challenge, exact registered redirect, code exchanged with the verifier for a site-bound bearer credential.",
+      "state": "proposed"
+    },
+    {
+      "id": "preissued_bearer",
+      "title": "Pre-issued bearer token",
+      "summary": "An already authorized administrator or CLI issues a capability-scoped token out of band; suitable for controlled integrations, not a user sign-in experience.",
+      "state": "observed"
+    },
+    {
+      "id": "embedded_credential_collection",
+      "title": "Embedded credential collection",
+      "summary": "An in-application form or WebView collecting the Kumwe password or a second factor is rejected outright; the SDK never receives user credentials.",
+      "state": "rejected"
+    }
+  ],
+  "vocabulary": {
+    "code_challenge_methods": ["S256"],
+    "response_types": ["code"],
+    "grant_types": ["authorization_code", "refresh_token"],
+    "token_types": ["Bearer"],
+    "redirect_kinds": ["loopback", "private_use_scheme"]
+  },
+  "limits": {
+    "code_verifier_min_length": 43,
+    "code_verifier_max_length": 128,
+    "state_min_bytes": 32,
+    "authorization_code_max_length": 512,
+    "access_token_max_length": 1024,
+    "refresh_token_max_length": 1024,
+    "expires_in_min_seconds": 300,
+    "expires_in_max_seconds": 7776000,
+    "scope_max_length": 1024,
+    "token_response_max_bytes": 16384
+  },
+  "proposed_resources": [
+    {
+      "method": "GET",
+      "path": "/api/v1/native/authorization-metadata",
+      "authentication": "anonymous",
+      "purpose": "Non-secret authorization server metadata subset: authorization, token and revocation endpoints, supported challenge methods, grant types and redirect kinds, so a client never assembles endpoints from convention."
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/native/authorize",
+      "authentication": "anonymous",
+      "purpose": "Authorization endpoint opened in the external user agent; core authenticates the user and performs any step-up inside its own protected browser UI before returning code and state to the exact registered redirect."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/native/token",
+      "authentication": "authorization_code",
+      "purpose": "Exchanges the authorization code with its PKCE verifier, or a refresh token, for the closed token response; refresh tokens rotate on every use."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/native/revoke",
+      "authentication": "bearer",
+      "purpose": "Revokes the presented access or refresh credential and its family immediately; revoking an already dead credential succeeds."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/native/logout",
+      "authentication": "bearer",
+      "purpose": "Ends the native session: revokes the credential family and reports whether server-side revocation completed, so the client records uncertain revocation honestly."
+    }
+  ],
+  "error_codes": [
+    "invalid_request",
+    "invalid_client",
+    "invalid_grant",
+    "unauthorized_client",
+    "unsupported_grant_type",
+    "invalid_scope",
+    "access_denied",
+    "server_error",
+    "temporarily_unavailable"
+  ],
+  "core_evidence": [
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Authentication/AccessTokenVerifier.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Administration/TokenRotation.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Console/Command/CreateAccessTokenCommand.php"
+  ],
+  "security_invariants": [
+    "Authorization happens in an external user agent at the exact HTTPS Kumwe origin; an embedded WebView or in-application form that collects credentials is not an acceptable substitute.",
+    "The code challenge method is S256 only; plain is never offered, and a downgrade to an unlisted method fails the flow.",
+    "Redirect URIs are registered exactly as loopback or private-use scheme values and matched exactly; no wildcard, path-prefix or open redirector is accepted.",
+    "State is verified before the code is used and the verifier never leaves the application; code, state and verifier are single-use.",
+    "Issued tokens carry the same site, audience, purpose, family and delegation bindings as observed pre-issued tokens; issuance may only reduce effective authority.",
+    "Refresh rotation is atomic from the application's perspective: old and new credentials are never mixed across one request, and a reused rotated refresh token revokes the family.",
+    "Access and refresh tokens enter an application-selected secure credential store only; they never appear in preferences, logs, crash reports or analytics.",
+    "Logout revokes server-side first, then removes local material, and reports uncertain server revocation instead of claiming success.",
+    "High-impact step-up stays inside core's protected browser UI; the native flow never collects an authenticator or recovery code.",
+    "Token responses are served no-store with the secret present exactly once; idempotent replays never contain the secret again."
+  ],
+  "adoption_requirements": [
+    "CORE-API-002",
+    "CORE-AUTH-001",
+    "CORE-CTX-001"
+  ]
+}

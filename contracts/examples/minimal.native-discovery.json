@@ -1,0 +1,39 @@
+{
+  "$schema": "urn:kumwe:proposal:schema:native-discovery-document:0.1.0",
+  "installation": {
+    "reference": "installation-example-0001",
+    "display_name": "Example Kumwe Installation"
+  },
+  "api": {
+    "allowed_origins": ["https://cms.example.invalid"],
+    "base_path": "/api/v1"
+  },
+  "compatibility": {
+    "core_version": "2.0.0",
+    "contract_generation": "generation-example-0001",
+    "openapi_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "min_client_contract": "1.0.0",
+    "max_client_contract": "1.0.0",
+    "support_url": "https://support.example.invalid/kumwe"
+  },
+  "authorization": {
+    "profiles": ["authorization_code_pkce", "preissued_bearer"],
+    "metadata_path": "/api/v1/native/authorization-metadata"
+  },
+  "context": {
+    "site_header": "Kumwe-Site",
+    "site_required": true
+  },
+  "limits": {
+    "max_request_bytes": 10485760,
+    "max_page_size": 200
+  },
+  "localization": {
+    "default_locale": "en",
+    "supported_locales": ["en", "de", "af"]
+  },
+  "capabilities": [
+    "kumwe.core.business.generated",
+    "kumwe.core.openapi.complete"
+  ]
+}

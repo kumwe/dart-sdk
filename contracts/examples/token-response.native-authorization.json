@@ -1,0 +1,25 @@
+{
+  "$schema": "urn:kumwe:proposal:schema:native-token-response:0.1.0",
+  "access_token": "example-access-token-0000000000000000000000000000000000000001",
+  "token_type": "Bearer",
+  "expires_in": 2592000,
+  "refresh_token": "example-refresh-token-000000000000000000000000000000000000001",
+  "scope": "content.read business.read business.write",
+  "credential": {
+    "reference": "credential-example-0001",
+    "family": "family-example-0001",
+    "purpose": "api",
+    "audience": "kumwe-http",
+    "subject_reference": "subject-example-0001"
+  },
+  "context": {
+    "site": "corporate",
+    "organization": "org-example-0001",
+    "workspace": "workspace-example-0001"
+  },
+  "authority_generations": {
+    "policy_generation": "7",
+    "membership_version": "3",
+    "security_epoch": "1"
+  }
+}

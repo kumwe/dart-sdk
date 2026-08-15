@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kumwe:proposal:schema:problem-details-registry:0.1.0",
+  "title": "Kumwe stable problem-details registry proposal schema",
+  "description": "Validates the non-authoritative proposal that turns the observed urn:kumwe:problem type URIs into a finite, versioned, machine-actionable registry.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "proposal_id",
+    "proposal_version",
+    "status",
+    "authoritative",
+    "audited_core",
+    "purpose",
+    "type_uri_prefix",
+    "code_pattern",
+    "retry_classes",
+    "extension_members",
+    "entries",
+    "core_evidence",
+    "security_invariants",
+    "adoption_requirements"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "proposal_id": {
+      "const": "kumwe.problem-details.registry"
+    },
+    "proposal_version": {
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+-proposal\\.[1-9][0-9]*$",
+      "maxLength": 40
+    },
+    "status": {
+      "const": "proposal"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "audited_core": {
+      "$ref": "#/$defs/auditedCore"
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "type_uri_prefix": {
+      "const": "urn:kumwe:problem:"
+    },
+    "code_pattern": {
+      "const": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$"
+    },
+    "retry_classes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/retryClass"
+      }
+    },
+    "extension_members": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/extensionMember"
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/entry"
+      }
+    },
+    "core_evidence": {
+      "$ref": "#/$defs/evidenceList"
+    },
+    "security_invariants": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    },
+    "adoption_requirements": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^CORE-[A-Z]+-[0-9]{3}$",
+        "maxLength": 40
+      }
+    }
+  },
+  "$defs": {
+    "auditedCore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "observed_at"],
+      "properties": {
+        "repository": {
+          "const": "kumwe/cms"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date",
+          "maxLength": 10
+        }
+      }
+    },
+    "retryClass": {
+      "type": "string",
+      "enum": [
+        "never",
+        "after_delay",
+        "after_reauthentication",
+        "after_precondition_refresh",
+        "after_context_refresh",
+        "unspecified"
+      ]
+    },
+    "problemCode": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+      "maxLength": 96
+    },
+    "extensionMember": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "value_kind", "purpose"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$",
+          "maxLength": 64
+        },
+        "value_kind": {
+          "type": "string",
+          "enum": [
+            "string",
+            "integer",
+            "field_violation_list"
+          ]
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "title", "summary", "observed", "retry_class"],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/problemCode"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "observed": {
+          "type": "boolean"
+        },
+        "http_statuses": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 400,
+            "maximum": 599
+          }
+        },
+        "retry_class": {
+          "$ref": "#/$defs/retryClass"
+        },
+        "extensions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$",
+            "maxLength": 64
+          }
+        },
+        "core_evidence": {
+          "$ref": "#/$defs/evidenceList"
+        }
+      }
+    },
+    "evidenceList": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    }
+  }
+}
