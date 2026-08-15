@@ -42,6 +42,17 @@ Core and SDK share fixture identities, not mutable copies. A fixture bundle incl
 
 The SDK records the core release and bundle digest. Local proposal examples are development fixtures only.
 
+When the adoption-package proposals become adopted contracts, their fixture bundles must additionally cover:
+
+- every registry problem code with its declared statuses, retry class and typed extensions, plus an
+  unknown-code instance handled as its status class;
+- the authorization flow's misuse cases from [Security](security.md#native-authorization-misuse-cases),
+  including state mismatch, code replay, verifier mismatch, method downgrade and rotated-refresh reuse;
+- discovery documents at both edges of the client-contract window and one outside it;
+- per-family idempotency declarations exercised against replay, late-duplicate and refusal behavior for the
+  general, business-record and custom-action ledgers; and
+- cursor iteration across policy revocation, tampered-cursor refusal and page-size ceiling refusal.
+
 ## OpenAPI generation gate
 
 Before an operation enters the invariant client:

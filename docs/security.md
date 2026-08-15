@@ -56,6 +56,24 @@
   adapter. Trust-all callbacks are never part of the public API.
 - Certificate pinning is an application policy because rotation and platform behavior require operational ownership.
 
+## Native authorization misuse cases
+
+The [native authorization proposal](../contracts/native-authorization.proposal.json) ([ADR 0006](decisions/0006-native-authorization-is-pkce-first.md))
+is security-sensitive; adoption review and later conformance work must exercise at least these misuse cases:
+
+| Misuse case | Required outcome |
+| --- | --- |
+| Authorization response with mismatched or replayed `state` | Code discarded; flow fails without a token request |
+| Authorization code replayed after redemption | Second exchange refused; issued family revoked on evidence of reuse |
+| Code exchanged without or with a wrong PKCE verifier | Exchange refused; verifier never leaves the application |
+| Server offers only an unlisted challenge method | Flow refused as a downgrade; `plain` is never negotiated |
+| Redirect to an unregistered or prefix-matched URI | Registration refused; exact loopback/private-scheme match only |
+| Embedded WebView posing as the system browser | Out of SDK control, but the SDK never accepts credentials, so harvested passwords never transit it |
+| Rotated refresh token presented again | Family revoked server-side; client treats it as terminal re-authentication |
+| Token response replayed by an intermediary that stores bodies | Secret appears exactly once; idempotent replays carry no secret |
+| Logout with unreachable revocation endpoint | Local material removed; uncertain server revocation recorded, never reported as success |
+| Token metadata claims a different site than requested | Session open fails closed; the SDK never adopts an unrequested context |
+
 ## Input and schema validation
 
 Validation occurs before a runtime document becomes a model:
@@ -136,7 +154,10 @@ Before beta, automated tests cover:
 - decimal exponent/overflow and Unicode confusables in identifiers;
 - mutation timeout before and after commit;
 - stale ETag and changed-body idempotency reuse;
-- logs/crash diagnostics containing sentinel secrets; and
-- extension disable while a surface is cached/open.
+- logs/crash diagnostics containing sentinel secrets;
+- extension disable while a surface is cached/open;
+- authorization state/verifier mismatch and code replay;
+- refresh rotation races and reuse of a rotated refresh token; and
+- logout with unreachable revocation.
 
 Passing client tests does not replace a core threat model or external application review.
