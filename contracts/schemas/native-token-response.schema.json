@@ -22,25 +22,25 @@
     "access_token": {
       "type": "string",
       "minLength": 16,
-      "maxLength": 2048
+      "maxLength": 1024
     },
     "token_type": {
       "const": "Bearer"
     },
     "expires_in": {
       "type": "integer",
-      "minimum": 60,
+      "minimum": 300,
       "maximum": 7776000
     },
     "refresh_token": {
       "type": "string",
       "minLength": 16,
-      "maxLength": 2048
+      "maxLength": 1024
     },
     "scope": {
       "type": "string",
       "pattern": "^[A-Za-z0-9._:-]+(?: [A-Za-z0-9._:-]+)*$",
-      "maxLength": 2048
+      "maxLength": 1024
     },
     "credential": {
       "type": "object",
@@ -91,7 +91,7 @@
       },
       "additionalProperties": {
         "type": "string",
-        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,190}$",
         "maxLength": 191
       }
     }

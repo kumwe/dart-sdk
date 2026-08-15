@@ -63,7 +63,7 @@ final class KumweRetryClassifier {
   /// belongs to the application.
   Duration? retryAfter(KumweResponse response) {
     final value = response.headers['retry-after']?.trim();
-    if (value == null || !RegExp(r'^(?:0|[1-9][0-9]{0,8})$').hasMatch(value)) {
+    if (value == null || !RegExp(r'^[0-9]{1,9}$').hasMatch(value)) {
       return null;
     }
     return Duration(seconds: int.parse(value));

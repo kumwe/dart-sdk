@@ -1,3 +1,4 @@
+import '../context/execution_context.dart';
 import 'credential_reference.dart';
 
 /// Identity of one stored secret: the exact origin plus the credential it
@@ -7,20 +8,20 @@ import 'credential_reference.dart';
 /// alone — so material can never be returned for the wrong deployment.
 final class KumweCredentialStoreKey {
   /// Creates a validated store key.
-  KumweCredentialStoreKey({required this.origin, required this.credential}) {
-    if (origin.scheme != 'https' ||
-        origin.host.isEmpty ||
-        origin.userInfo.isNotEmpty ||
-        origin.hasQuery ||
-        origin.hasFragment) {
-      throw ArgumentError.value(
-        origin,
-        'origin',
-        'Credential store keys bind an HTTPS origin without credentials, '
-            'query, or fragment.',
-      );
-    }
+  factory KumweCredentialStoreKey({
+    required Uri origin,
+    required KumweCredentialReference credential,
+  }) {
+    return KumweCredentialStoreKey._(
+      origin: KumweContextIdentifiers.normalizeOrigin(origin, 'origin'),
+      credential: credential,
+    );
   }
+
+  const KumweCredentialStoreKey._({
+    required this.origin,
+    required this.credential,
+  });
 
   /// Exact HTTPS origin the credential belongs to.
   final Uri origin;

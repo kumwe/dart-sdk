@@ -33,6 +33,14 @@ void main() {
     );
     expect(
       () => KumweTokenRequest(
+        origin: Uri.parse('https://user:secret@cms.example.invalid/base?q=1'),
+        selection: KumweContextSelection(site: 'corporate'),
+        reason: KumweTokenRequestReason.initial,
+      ),
+      throwsArgumentError,
+    );
+    expect(
+      () => KumweTokenRequest(
         origin: Uri.https('cms.example.invalid'),
         selection: KumweContextSelection(site: 'corporate'),
         reason: KumweTokenRequestReason.refresh,
@@ -45,13 +53,14 @@ void main() {
     final token = KumweAccessToken(
       token: BearerToken('example-access-token-0001'),
       credential: KumweCredentialReference('credential-0001'),
-      boundSite: 'corporate',
+      boundSite: ' Corporate ',
       expiresAt: DateTime.utc(2026, 9, 1),
       refreshEligible: true,
       purpose: 'api',
       audience: 'kumwe-http',
       authorityGenerations: {'policy_generation': '7'},
     );
+    expect(token.boundSite, 'corporate');
     expect(token.toString(), isNot(contains('example-access-token-0001')));
     expect(token.toString(), contains('credential-0001'));
     expect(
@@ -68,6 +77,25 @@ void main() {
         },
       ),
       throwsArgumentError,
+    );
+    expect(
+      () => KumweAccessToken(
+        token: BearerToken('example-access-token-0003'),
+        credential: KumweCredentialReference('credential-0003'),
+        boundSite: 'corporate',
+        authorityGenerations: {'Policy Gen': '7'},
+      ),
+      throwsArgumentError,
+      reason: 'generation keys follow the wire contract pattern',
+    );
+    expect(
+      () => KumweAccessToken(
+        token: BearerToken('example-access-token-0004'),
+        credential: KumweCredentialReference('credential-0004'),
+        boundSite: '',
+      ),
+      throwsArgumentError,
+      reason: 'an unvalidated bound site would defeat local site binding',
     );
   });
 
@@ -98,6 +126,14 @@ void main() {
         credential: KumweCredentialReference('credential-0001'),
       ),
       throwsArgumentError,
+    );
+    expect(
+      () => KumweCredentialStoreKey(
+        origin: Uri.parse('https://cms.example.invalid/tenant-a'),
+        credential: KumweCredentialReference('credential-0001'),
+      ),
+      throwsArgumentError,
+      reason: 'distinct paths must never collapse into one secret slot',
     );
   });
 

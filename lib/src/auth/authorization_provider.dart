@@ -19,19 +19,12 @@ enum KumweTokenRequestReason {
 /// One request from the SDK to its application-owned authorization provider.
 final class KumweTokenRequest {
   /// Creates a validated token request.
-  KumweTokenRequest({
-    required this.origin,
-    required this.selection,
-    required this.reason,
-    this.previousCredential,
+  factory KumweTokenRequest({
+    required Uri origin,
+    required KumweContextSelection selection,
+    required KumweTokenRequestReason reason,
+    KumweCredentialReference? previousCredential,
   }) {
-    if (origin.scheme != 'https' || origin.host.isEmpty) {
-      throw ArgumentError.value(
-        origin,
-        'origin',
-        'Token requests are bound to an HTTPS origin.',
-      );
-    }
     if (reason != KumweTokenRequestReason.initial &&
         previousCredential == null) {
       throw ArgumentError.value(
@@ -40,7 +33,20 @@ final class KumweTokenRequest {
         'Refresh and re-authentication name the previous credential.',
       );
     }
+    return KumweTokenRequest._(
+      origin: KumweContextIdentifiers.normalizeOrigin(origin, 'origin'),
+      selection: selection,
+      reason: reason,
+      previousCredential: previousCredential,
+    );
   }
+
+  const KumweTokenRequest._({
+    required this.origin,
+    required this.selection,
+    required this.reason,
+    required this.previousCredential,
+  });
 
   /// Exact HTTPS origin the token will be used against.
   final Uri origin;
@@ -62,33 +68,68 @@ final class KumweTokenRequest {
 /// binding it enforces arrives here as explicit metadata from the provider.
 final class KumweAccessToken {
   /// Creates a token with its validated metadata.
-  KumweAccessToken({
+  factory KumweAccessToken({
+    required BearerToken token,
+    required KumweCredentialReference credential,
+    required String boundSite,
+    String? boundOrganization,
+    String? boundWorkspace,
+    DateTime? expiresAt,
+    bool refreshEligible = false,
+    String? purpose,
+    String? audience,
+    String? subjectReference,
+    Map<String, String> authorityGenerations = const {},
+  }) {
+    if (authorityGenerations.length > 16 ||
+        authorityGenerations.entries.any(
+          (entry) =>
+              !_generationKeyPattern.hasMatch(entry.key) ||
+              !_generationValuePattern.hasMatch(entry.value),
+        )) {
+      throw ArgumentError(
+        'Authority generations are a bounded map of up to 16 identifier '
+        'keys with identifier values of 1 to 191 characters.',
+      );
+    }
+    return KumweAccessToken._(
+      token: token,
+      credential: credential,
+      boundSite: KumweContextIdentifiers.normalizeSite(boundSite),
+      boundOrganization: boundOrganization == null
+          ? null
+          : KumweContextIdentifiers.normalizeSelection(
+              boundOrganization,
+              'boundOrganization',
+            ),
+      boundWorkspace: boundWorkspace == null
+          ? null
+          : KumweContextIdentifiers.normalizeSelection(
+              boundWorkspace,
+              'boundWorkspace',
+            ),
+      expiresAt: expiresAt,
+      refreshEligible: refreshEligible,
+      purpose: purpose,
+      audience: audience,
+      subjectReference: subjectReference,
+      authorityGenerations: Map.unmodifiable(authorityGenerations),
+    );
+  }
+
+  const KumweAccessToken._({
     required this.token,
     required this.credential,
     required this.boundSite,
-    this.boundOrganization,
-    this.boundWorkspace,
-    this.expiresAt,
-    this.refreshEligible = false,
-    this.purpose,
-    this.audience,
-    this.subjectReference,
-    Map<String, String> authorityGenerations = const {},
-  }) : authorityGenerations = Map.unmodifiable(authorityGenerations) {
-    if (this.authorityGenerations.length > 16 ||
-        this.authorityGenerations.entries.any(
-          (entry) =>
-              entry.key.isEmpty ||
-              entry.key.length > 64 ||
-              entry.value.isEmpty ||
-              entry.value.length > 191,
-        )) {
-      throw ArgumentError(
-        'Authority generations are a bounded map of up to 16 short keys '
-        'with values of 1 to 191 characters.',
-      );
-    }
-  }
+    required this.boundOrganization,
+    required this.boundWorkspace,
+    required this.expiresAt,
+    required this.refreshEligible,
+    required this.purpose,
+    required this.audience,
+    required this.subjectReference,
+    required this.authorityGenerations,
+  });
 
   /// Opaque bearer credential presented on protected requests.
   final BearerToken token;
@@ -96,8 +137,8 @@ final class KumweAccessToken {
   /// Non-secret reference naming this credential.
   final KumweCredentialReference credential;
 
-  /// Site the server bound the token to; requests for other sites fail
-  /// locally instead of leaking the token across contexts.
+  /// Normalized site the server bound the token to; requests for other
+  /// sites fail locally instead of leaking the token across contexts.
   final String boundSite;
 
   /// Optional organization binding reported by the server.
@@ -130,6 +171,14 @@ final class KumweAccessToken {
   String toString() =>
       'KumweAccessToken(credential: ${credential.value}, '
       'site: $boundSite, <redacted>)';
+
+  static final RegExp _generationKeyPattern = RegExp(
+    r'^[a-z0-9][a-z0-9._-]{0,63}$',
+  );
+
+  static final RegExp _generationValuePattern = RegExp(
+    r'^[A-Za-z0-9][A-Za-z0-9._:-]{0,190}$',
+  );
 }
 
 /// The application-owned seam that supplies and invalidates access tokens.

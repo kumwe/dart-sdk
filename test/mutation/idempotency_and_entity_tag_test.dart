@@ -37,14 +37,22 @@ void main() {
     expect(tag.value, '"v3"');
     expect(EntityTag.recordVersion(12), EntityTag('"v12"'));
     expect(EntityTag('"abc123"').recordVersion, isNull);
+    expect(EntityTag('""').value, '""');
+    expect(EntityTag('"café"').value, '"café"');
   });
 
   test('entity tags reject weak or malformed validators', () {
-    for (final value in ['', 'v3', '"v3', 'v3"', 'W/"v3"', '"v 3"', '""']) {
+    for (final value in ['', 'v3', '"v3', 'v3"', 'W/"v3"', '"v 3"', '"a"b"']) {
       expect(() => EntityTag(value), throwsArgumentError, reason: value);
     }
     expect(() => EntityTag.recordVersion(0), throwsArgumentError);
     expect(() => EntityTag.recordVersion(-1), throwsArgumentError);
+  });
+
+  test('entity tags return null for record versions beyond exact integers', () {
+    expect(EntityTag('"v9223372036854775808"').recordVersion, isNull);
+    expect(EntityTag('"v${'9' * 19}"').recordVersion, isNull);
+    expect(EntityTag('"v${'9' * 18}"').recordVersion, int.parse('9' * 18));
   });
 
   test('entity tag header names match the audited wire contract', () {

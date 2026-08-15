@@ -61,6 +61,10 @@ void main() {
       classifier.retryAfter(_response(503, {'retry-after': '0'})),
       Duration.zero,
     );
+    expect(
+      classifier.retryAfter(_response(503, {'Retry-After': '030'})),
+      const Duration(seconds: 30),
+    );
     expect(classifier.retryAfter(_response(503)), isNull);
     expect(
       classifier.retryAfter(

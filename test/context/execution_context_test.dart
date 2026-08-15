@@ -47,6 +47,7 @@ void main() {
       Uri.parse('https://user:secret@cms.example.invalid'),
       Uri.parse('https://cms.example.invalid/?probe=1'),
       Uri.parse('https://cms.example.invalid/#fragment'),
+      Uri.parse('https://cms.example.invalid/base'),
     ]) {
       expect(
         () => KumweExecutionContext(
@@ -123,6 +124,16 @@ void main() {
         authorityGenerations: {'Bad Key': '1'},
       ),
       throwsArgumentError,
+    );
+    expect(
+      () => KumweExecutionContext(
+        origin: Uri.https('cms.example.invalid'),
+        selection: KumweContextSelection(site: 'corporate'),
+        credential: KumweCredentialReference('credential-0001'),
+        authorityGenerations: {'k': 'v,k2=v2'},
+      ),
+      throwsArgumentError,
+      reason: 'separator injection into the cache partition must be refused',
     );
     final context = KumweExecutionContext(
       origin: Uri.https('cms.example.invalid'),

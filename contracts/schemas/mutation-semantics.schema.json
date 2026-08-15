@@ -191,7 +191,17 @@
     "idempotency": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["required", "replay_seconds", "late_duplicate"],
+      "required": ["required", "late_duplicate"],
+      "if": {
+        "properties": {
+          "required": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": ["required", "late_duplicate", "replay_seconds"]
+      },
       "properties": {
         "required": {
           "type": "boolean"

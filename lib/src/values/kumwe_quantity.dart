@@ -24,12 +24,17 @@ final class KumweQuantity {
   ///
   /// Unknown members are rejected: the wire contract is a closed object, so an
   /// extra member indicates a contract violation rather than an extension.
+  /// Every wire violation on this path throws a [FormatException].
   factory KumweQuantity.fromJson(Map<String, Object?> json) {
     final amount = json['amount'];
     final unit = json['unit'];
-    if (json.length != 2 || amount is! String || unit is! String) {
+    if (json.length != 2 ||
+        amount is! String ||
+        unit is! String ||
+        !_unitPattern.hasMatch(unit)) {
       throw FormatException(
-        'Quantity is the closed {"amount", "unit"} string pair.',
+        'Quantity is the closed {"amount", "unit"} pair of a canonical '
+        'decimal string and a bounded portable unit identifier.',
         json.toString(),
       );
     }
