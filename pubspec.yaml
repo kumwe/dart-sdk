@@ -1,0 +1,16 @@
+name: kumwe_sdk
+description: >-
+  Pure Dart transport and contract primitives for site-bound Kumwe CMS clients.
+version: 0.1.0-dev.1
+repository: https://github.com/kumwe/dart-sdk
+publish_to: none
+
+environment:
+  sdk: '>=3.8.0 <4.0.0'
+
+dependencies:
+  http: ^1.6.0
+
+dev_dependencies:
+  lints: ^6.1.0
+  test: ^1.26.0

@@ -1,0 +1,82 @@
+{
+  "$schema": "./schemas/client-surface-contract.schema.json",
+  "proposal_id": "kumwe.client-surface.contract",
+  "proposal_version": "0.1.0-proposal.1",
+  "status": "proposal",
+  "authoritative": false,
+  "manifest_schema": "./schemas/client-surface-manifest.schema.json",
+  "purpose": "Define a bounded declarative client-surface vocabulary for policy-filtered extension workspaces without arbitrary Dart, script, template, route, URL, handler, expression or credential execution.",
+  "limits": {
+    "encoded_bytes": 1048576,
+    "surfaces": 64,
+    "navigation_items_per_surface": 128,
+    "screens_per_surface": 256,
+    "required_contracts": 16,
+    "required_capabilities_per_item": 32,
+    "field_presentations_per_screen": 64,
+    "translations_per_label": 16,
+    "string_bytes": 2048
+  },
+  "vocabulary": {
+    "audiences": ["administrator", "portal"],
+    "surface_kinds": ["workspace", "module"],
+    "screen_kinds": ["collection", "record", "form", "document", "report"],
+    "widgets": [
+      "text",
+      "multiline_text",
+      "rich_text",
+      "integer",
+      "decimal",
+      "money",
+      "quantity",
+      "boolean",
+      "choice",
+      "date",
+      "time",
+      "instant",
+      "email",
+      "url",
+      "phone",
+      "media_reference",
+      "entity_reference",
+      "object",
+      "collection",
+      "secret",
+      "output"
+    ],
+    "business_operations": [
+      "discover",
+      "browse",
+      "read",
+      "create",
+      "update",
+      "delete",
+      "archive",
+      "restore",
+      "history",
+      "action",
+      "relation",
+      "approval",
+      "report"
+    ]
+  },
+  "security_invariants": [
+    "Core admission proves owner namespacing, schema validity, reference integrity and bounded counts before activation commits.",
+    "Core serves only policy-visible contributions for the exact authenticated site, organization and workspace context.",
+    "A client manifest contains no arbitrary HTTP path, URL, executable code, template, expression, handler or credential.",
+    "The SDK validates the closed manifest schema again before exposing immutable wire-level contract models.",
+    "Unknown required vocabulary fails the affected surface closed instead of being ignored.",
+    "Capability strings and presentation hints never replace server authorization or validation.",
+    "Cached manifests bind trusted runtime, owner, authority and referenced definition generations.",
+    "Disable, uninstall, trust loss, context change and generation change invalidate the effective manifest.",
+    "All labels are plain text and all referenced data remains subject to field and row disclosure policy.",
+    "Anonymous public presentation is outside this authenticated contract and requires a separate adopted public-site contract."
+  ],
+  "adoption_requirements": [
+    "CORE-API-002",
+    "CORE-CTX-001",
+    "CORE-KIS-001",
+    "CORE-LOCALIZATION-001",
+    "CORE-SURFACE-001"
+  ]
+}

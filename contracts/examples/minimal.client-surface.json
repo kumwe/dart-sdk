@@ -1,0 +1,90 @@
+{
+  "$schema": "urn:kumwe:proposal:schema:client-surface-manifest:0.1.0",
+  "schema_version": 1,
+  "manifest_id": "acme.orders.client",
+  "owner": {
+    "extension": "acme/orders",
+    "version": "1.0.0",
+    "checksum": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "runtime": {
+    "generation": 42,
+    "checksum": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "required_contracts": [
+    {
+      "id": "kumwe.client-surface",
+      "version_range": "^1.0.0"
+    },
+    {
+      "id": "kumwe.business.generated",
+      "version_range": "^1.0.0"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "acme.orders.admin.workspace",
+      "audience": "administrator",
+      "kind": "workspace",
+      "label": {
+        "default": "Orders",
+        "translations": {
+          "fr": "Commandes"
+        }
+      },
+      "description": {
+        "default": "Browse and maintain policy-visible orders."
+      },
+      "order": 200,
+      "required_capabilities": [
+        "business.record.browse"
+      ],
+      "unsupported_behavior": "show_unavailable",
+      "navigation": [
+        {
+          "id": "acme.orders.admin.nav.orders",
+          "label": {
+            "default": "All orders"
+          },
+          "screen": "acme.orders.admin.screen.orders",
+          "order": 10,
+          "icon": "records",
+          "required_capabilities": [
+            "business.record.browse"
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "id": "acme.orders.admin.screen.orders",
+          "kind": "collection",
+          "label": {
+            "default": "Orders"
+          },
+          "order": 10,
+          "required_capabilities": [
+            "business.record.browse"
+          ],
+          "required_operations": [
+            "browse",
+            "read"
+          ],
+          "definition": "acme.order",
+          "view": "default_list",
+          "field_presentations": {
+            "order_number": {
+              "widget": "output",
+              "emphasis": "primary",
+              "width": "half"
+            },
+            "total": {
+              "widget": "money",
+              "emphasis": "normal",
+              "width": "half"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

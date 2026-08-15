@@ -1,0 +1,189 @@
+{
+  "$schema": "urn:kumwe:proposal:schema:client-surface-manifest:0.1.0",
+  "schema_version": 1,
+  "manifest_id": "example.asset-inspection.client",
+  "owner": {
+    "extension": "example/asset-inspection",
+    "version": "2.1.0",
+    "checksum": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  },
+  "runtime": {
+    "generation": 108,
+    "checksum": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "required_contracts": [
+    {
+      "id": "kumwe.client-surface",
+      "version_range": "^1.0.0"
+    },
+    {
+      "id": "kumwe.business.generated",
+      "version_range": "^1.0.0"
+    },
+    {
+      "id": "kumwe.business.reporting",
+      "version_range": "^1.0.0"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "example.asset-inspection.admin.workspace",
+      "audience": "administrator",
+      "kind": "workspace",
+      "label": {
+        "default": "Asset inspections",
+        "translations": {
+          "de": "Anlageninspektionen",
+          "fr": "Inspections des actifs"
+        }
+      },
+      "description": {
+        "default": "Inspect assets, findings and policy-visible reports."
+      },
+      "order": 300,
+      "required_capabilities": [
+        "business.record.browse"
+      ],
+      "unsupported_behavior": "show_unavailable",
+      "navigation": [
+        {
+          "id": "example.asset-inspection.admin.nav.assets",
+          "label": {
+            "default": "Assets"
+          },
+          "screen": "example.asset-inspection.admin.screen.assets",
+          "order": 10,
+          "icon": "inventory",
+          "required_capabilities": [
+            "business.record.browse"
+          ]
+        },
+        {
+          "id": "example.asset-inspection.admin.nav.report",
+          "label": {
+            "default": "Inspection summary"
+          },
+          "screen": "example.asset-inspection.admin.screen.report",
+          "order": 20,
+          "icon": "report",
+          "required_capabilities": [
+            "business.report.execute"
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "id": "example.asset-inspection.admin.screen.assets",
+          "kind": "collection",
+          "label": {
+            "default": "Assets"
+          },
+          "order": 10,
+          "required_capabilities": [
+            "business.record.browse"
+          ],
+          "required_operations": [
+            "browse",
+            "read",
+            "relation"
+          ],
+          "definition": "example.asset",
+          "view": "inspection_queue",
+          "field_presentations": {
+            "asset_number": {
+              "widget": "output",
+              "emphasis": "primary",
+              "width": "half"
+            },
+            "last_inspected_at": {
+              "widget": "instant",
+              "emphasis": "secondary",
+              "width": "half"
+            }
+          }
+        },
+        {
+          "id": "example.asset-inspection.admin.screen.report",
+          "kind": "report",
+          "label": {
+            "default": "Inspection summary"
+          },
+          "description": {
+            "default": "Execute the declared policy-filtered inspection summary report."
+          },
+          "order": 20,
+          "required_capabilities": [
+            "business.report.execute"
+          ],
+          "required_operations": [
+            "report"
+          ],
+          "report": "example.inspection_summary"
+        }
+      ]
+    },
+    {
+      "id": "example.asset-inspection.portal.workspace",
+      "audience": "portal",
+      "kind": "workspace",
+      "label": {
+        "default": "My inspections"
+      },
+      "order": 100,
+      "required_capabilities": [
+        "business.record.read"
+      ],
+      "unsupported_behavior": "hide",
+      "navigation": [
+        {
+          "id": "example.asset-inspection.portal.nav.document",
+          "label": {
+            "default": "Inspection document"
+          },
+          "screen": "example.asset-inspection.portal.screen.document",
+          "order": 10,
+          "icon": "document",
+          "required_capabilities": [
+            "business.record.read"
+          ]
+        }
+      ],
+      "screens": [
+        {
+          "id": "example.asset-inspection.portal.screen.document",
+          "kind": "document",
+          "label": {
+            "default": "Inspection document"
+          },
+          "order": 10,
+          "required_capabilities": [
+            "business.record.read"
+          ],
+          "required_operations": [
+            "read",
+            "history"
+          ],
+          "definition": "example.inspection",
+          "view": "inspection_document",
+          "field_presentations": {
+            "inspection_number": {
+              "widget": "output",
+              "emphasis": "primary",
+              "width": "half"
+            },
+            "completed_at": {
+              "widget": "instant",
+              "emphasis": "normal",
+              "width": "half"
+            },
+            "measurements": {
+              "widget": "collection",
+              "emphasis": "normal",
+              "width": "full"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
