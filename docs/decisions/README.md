@@ -10,6 +10,7 @@ mean Kumwe core has adopted a proposed wire contract.
 | [0003](0003-core-owns-wire-contracts.md) | Core owns adopted wire contracts; SDK pins released artifacts | Accepted |
 | [0004](0004-sdk-never-collects-user-credentials.md) | The SDK never collects user credentials or step-up factors | Accepted |
 | [0005](0005-offline-sync-is-a-separate-profile.md) | Offline synchronization is a separate adopted profile | Accepted |
+| [0006](0006-native-authorization-is-pkce-first.md) | Native authorization is PKCE-first through an external user agent | Accepted |
 
 New ADRs use the next four-digit number and link affected contracts, security controls, conformance gates and
 superseded decisions. A changed decision is superseded by a new ADR rather than silently rewritten.

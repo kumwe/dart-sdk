@@ -23,11 +23,26 @@ adoption nor core completion.
 
 Target gate: **G1 — Core contract adoption**
 
-- Review the capability requirement index with core maintainers.
-- Decide the native-application authorization profile for desktop and mobile hosts.
-- Complete request, success and Problem Details schemas for the supported core resource set.
-- Resolve idempotency and concurrency semantics by resource family.
-- Adopt a versioned client-surface contract and discovery resource in core.
+The machine-readable half of this package is now drafted in [`contracts/`](../contracts/README.md); each proposal
+seeds core review with an audit-grounded design instead of a blank page. Core's roadmap currently contains no
+native-client finding at all, so the first adoption step is procedural: file the corresponding findings in core's
+roadmap lifecycle, because core closes work only through that ledger.
+
+| Requirement | Drafted proposal | Decision core owns |
+| --- | --- | --- |
+| `CORE-API-002` | [`problem-details-registry.proposal.json`](../contracts/problem-details-registry.proposal.json) | Freeze the observed `urn:kumwe:problem:` codes as a versioned registry with statuses and retry classes |
+| `CORE-AUTH-001` | [`native-authorization.proposal.json`](../contracts/native-authorization.proposal.json) | Accept the PKCE-first profile ([ADR 0006](decisions/0006-native-authorization-is-pkce-first.md)) or select an equivalent reviewed flow |
+| `CORE-CTX-001` | [`native-discovery.proposal.json`](../contracts/native-discovery.proposal.json) | Adopt the pre-authentication discovery document and bind context selection to token issuance |
+| `CORE-MUTATION-001` | [`mutation-semantics.proposal.json`](../contracts/mutation-semantics.proposal.json) | Make per-family replay/precondition declarations normative and scope the shared 24-hour header text |
+| `CORE-SURFACE-001` | [`client-surface-contract.proposal.json`](../contracts/client-surface-contract.proposal.json) | Adopt the bounded declarative client-surface grammar and discovery resource |
+| `CORE-COLLECTION-001` | [`collection-pagination.proposal.json`](../contracts/collection-pagination.proposal.json) | Extend the observed business cursor envelope to management collections |
+
+Remaining package work:
+
+- Review the capability requirement index and the drafted proposals with core maintainers.
+- File the native-client findings in core's roadmap so the work exists in its authoritative ledger.
+- Complete request and success schemas for the supported core resource set (`CORE-API-001` has no machine proposal
+  here; it is core's own P0-C machine-surface classification work).
 - Add upstream compatibility fixtures, semantic-version rules and deprecation metadata.
 
 Exit evidence: released core artifacts, immutable digests, fixture results and a compatibility window. A proposal in
@@ -38,8 +53,12 @@ this repository is not exit evidence.
 Target gate: **G2 — Generated SDK alpha**
 
 - Pin the adopted core contract by version and digest.
-- Build deterministic Dart generation and canonical exact-value codecs.
-- Implement transport, Problem Details, ETag, idempotency and cursor abstractions.
+- Build deterministic Dart generation on top of the SDK-owned primitives that already exist: canonical exact-value
+  types (`KumweDecimal`, `KumweMoney`, `KumweQuantity`), idempotency-key and strong-entity-tag values,
+  HTTP-semantics retry classification, immutable execution context, and the authorization-provider and
+  credential-store ports.
+- Implement the remaining transport abstractions the generated client needs: typed results, cursor pages and
+  mutation receipts against the adopted contract.
 - Add fake-server and released-core contract suites.
 - Publish an internal alpha only; do not advertise graphical parity.
 

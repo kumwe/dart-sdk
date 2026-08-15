@@ -30,7 +30,10 @@ Core MUST expose a finite stable `code` (or equivalently stable type URI) for ea
 extensions such as field violations, actual/expected version and retry class. Human `detail` text is not a control
 flow API.
 
-Current state: **Missing**. The shared `ProblemDetails` schema is open and does not enumerate codes.
+Current state: **Missing; proposed here**. The shared `ProblemDetails` schema is open and does not enumerate
+codes, although call sites already emit `urn:kumwe:problem:` type URIs. The registry grammar and an
+audit-seeded code set are drafted in
+[`contracts/problem-details-registry.proposal.json`](../contracts/problem-details-registry.proposal.json).
 
 ### CORE-AUTH-001 — native application authorization
 
@@ -38,7 +41,10 @@ Core MUST adopt a user-facing native application authorization flow for desktop 
 2.1 authorization code with PKCE and an external user-agent, or a comparably reviewed device/session exchange. It
 MUST define refresh, revocation, logout, redirect URI registration, scopes/capabilities and failure semantics.
 
-Current state: **Missing**. Only pre-issued bearer tokens are available to REST clients.
+Current state: **Missing; proposed here**. Only pre-issued bearer tokens are available to REST clients. The
+PKCE-first profile, endpoint set, closed token response and misuse invariants are drafted in
+[`contracts/native-authorization.proposal.json`](../contracts/native-authorization.proposal.json) under
+[ADR 0006](decisions/0006-native-authorization-is-pkce-first.md).
 
 ### CORE-CTX-001 — authority and context discovery
 
@@ -46,7 +52,10 @@ An authenticated client MUST be able to discover its subject, credential purpose
 organization/workspace selections and the generation/version values needed for safe cache invalidation. Selecting a
 context MUST be explicit and authorization checked.
 
-Current state: **Partial**. Tokens carry rich bindings, but no native bootstrap/context-switch resource is exposed.
+Current state: **Partial; proposed here**. Tokens carry rich bindings, but no native bootstrap/context-switch
+resource is exposed. A pre-authentication discovery document is drafted in
+[`contracts/native-discovery.proposal.json`](../contracts/native-discovery.proposal.json); authenticated context
+selection binds to the token exchange in the native-authorization proposal.
 
 ### CORE-MUTATION-001 — per-operation retry and concurrency contract
 
@@ -54,7 +63,9 @@ Every mutation MUST declare whether it requires idempotency, its replay and late
 precondition form, retryable status codes and operation-status support. General HTTP, business-record and custom
 action windows MUST not contradict one another under a shared header description.
 
-Current state: **Partial/inconsistent**.
+Current state: **Partial/inconsistent; proposed here**. Per-family replay, late-duplicate, precondition and
+status declarations grounded in the two observed ledgers are drafted in
+[`contracts/mutation-semantics.proposal.json`](../contracts/mutation-semantics.proposal.json).
 
 ### CORE-SURFACE-001 — policy-filtered client-surface discovery
 
@@ -93,7 +104,9 @@ Until these are adopted, the SDK MUST NOT advertise the corresponding parity pro
 ### CORE-COLLECTION-001 — uniform bounded collections
 
 Collections MUST define cursor semantics, page size bounds, sort/filter vocabulary, stable ordering and total/count
-behavior. The content list's fixed 100-record cap without continuation is not sufficient for a full client.
+behavior. The content list's fixed 100-record cap without continuation is not sufficient for a full client. The
+uniform envelope extending the observed business cursor contract is drafted in
+[`contracts/collection-pagination.proposal.json`](../contracts/collection-pagination.proposal.json).
 
 ### CORE-DOCUMENT-001 — atomic aggregate documents
 

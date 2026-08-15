@@ -6,6 +6,11 @@ SDK stage: executable transport and contract foundation
 
 Audited core: `kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`
 
+Head drift: core's default branch has advanced eleven commits past the audited commit with `api/` byte-identical;
+the delta is mostly localization, migration and tooling work. The audit pin is retained. The localization changes
+(`LocalizedDefinitionText`, catalogue translation, wording administration) may move the `CORE-LOCALIZATION-001`
+assessment and need a targeted re-audit before that row is trusted for adoption review.
+
 ## Programme status
 
 This repository is parallel preparatory work for a **proposed Version 3 Native Client Platform**. It does not change
@@ -33,10 +38,11 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Business search and cursor pagination | Observed | Closed bounded query document |
 | ETag/If-Match for business records | Observed | Strong `"vN"` preconditions |
 | Complete management request/response schemas | Missing | Most audited operations lack response content; multiple input operations lack bodies |
-| Stable problem-code registry | Missing | Generic open Problem Details object; core roadmap marks machine contract work outstanding |
-| Uniform collection pagination | Partial | Generated business is strong; content is capped at 100 without continuation |
-| Consistent idempotency semantics | Partial | General contract says 24 hours; business defaults differ; custom actions retain a one-day path |
-| Native application authorization flow | Missing | Bearer tokens are pre-issued; no PKCE/device/session-exchange endpoint |
+| Stable problem-code registry | Proposed | Draft under `contracts/`, seeded from the 36 `urn:kumwe:problem:` type URIs observed at the audited commit |
+| Uniform collection pagination | Proposed | Draft under `contracts/` extends the observed business cursor envelope; content remains capped at 100 without continuation |
+| Consistent idempotency semantics | Proposed | Draft under `contracts/` declares the two observed ledgers per family; the shared 24-hour text still contradicts them in core |
+| Native application authorization flow | Proposed | Draft under `contracts/` (PKCE-first, ADR 0006); core still exposes only pre-issued bearer tokens |
+| Native client bootstrap discovery | Proposed | Draft under `contracts/`; core serves an API identity document but no native discovery resource |
 | Media administration API | Missing | Public media fetch exists; management upload/list/delete is graphical |
 | Business-security administration API | Missing | Organizations, memberships, policies and step-up administration are graphical |
 | High-impact approval decision API | Missing by current design | Fresh browser session-bound step-up is required |
@@ -46,7 +52,7 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Durable client change feed | Missing | Internal outbox/events are not a client API |
 | Realtime client subscription | Missing | No SSE/WebSocket or push contract found |
 | Offline sync | Deferred | Foundations exist; queue/delta/reconciliation and numbering decision do not |
-| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented; generated resource clients are blocked on core contract maturity |
+| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context and the authorization-provider/credential-store ports; generated resource clients are blocked on core contract maturity |
 
 ## Gate status
 
@@ -56,7 +62,7 @@ They are local SDK gates, not names or statuses of current core programme gates.
 | Gate | Exit condition | Status |
 | --- | --- | --- |
 | G0 — Honest baseline | Scope, decisions, requirements and proposal contracts agree | Drafted in this foundation |
-| G1 — Core contract adoption | Core owns complete typed REST/errors/auth discovery and client-surface versions | Blocked on upstream adoption |
+| G1 — Core contract adoption | Core owns complete typed REST/errors/auth discovery and client-surface versions | Adoption package drafted under `contracts/`; blocked on upstream adoption |
 | G2 — Generated SDK alpha | Reproducible invariant client passes contract fixtures | Foundation implemented; generated resource client blocked on G1 |
 | G3 — Dynamic runtime alpha | Runtime metadata and client-surface interpreter pass lifecycle fixtures | Blocked on G1 |
 | G4 — Native authorization/context beta | Supported authorization-provider integration and context switching pass abuse tests | Blocked on upstream auth decision |
