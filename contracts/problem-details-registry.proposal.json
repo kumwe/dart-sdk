@@ -1,0 +1,384 @@
+{
+  "$schema": "./schemas/problem-details-registry.schema.json",
+  "proposal_id": "kumwe.problem-details.registry",
+  "proposal_version": "0.1.0-proposal.1",
+  "status": "proposal",
+  "authoritative": false,
+  "audited_core": {
+    "repository": "kumwe/cms",
+    "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
+    "observed_at": "2026-08-15"
+  },
+  "purpose": "Adopt the observed urn:kumwe:problem type URIs as a finite versioned registry with declared HTTP statuses, retry classes and typed extension members, so a client acts on stable codes instead of parsing human detail text. Codes currently live at individual call sites without a registry, statuses or compatibility promise; this proposal seeds the registry exclusively from type URIs observed at the audited commit and adds no invented failure behavior.",
+  "type_uri_prefix": "urn:kumwe:problem:",
+  "code_pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+  "retry_classes": [
+    "never",
+    "after_delay",
+    "after_reauthentication",
+    "after_precondition_refresh",
+    "after_context_refresh",
+    "unspecified"
+  ],
+  "extension_members": [
+    {
+      "name": "request_id",
+      "value_kind": "string",
+      "purpose": "Correlation identifier already emitted with problem responses; adoption declares it a stable member."
+    },
+    {
+      "name": "field_violations",
+      "value_kind": "field_violation_list",
+      "purpose": "Bounded list binding each validation failure to the exact input field, its stable code and a redacted message."
+    },
+    {
+      "name": "expected_version",
+      "value_kind": "string",
+      "purpose": "Version the precondition required, returned with stale-precondition failures."
+    },
+    {
+      "name": "actual_version",
+      "value_kind": "string",
+      "purpose": "Current authoritative version, returned with stale-precondition failures."
+    },
+    {
+      "name": "retry_after_seconds",
+      "value_kind": "integer",
+      "purpose": "Machine copy of the Retry-After delay for transient failures, so the delay survives intermediaries that strip headers."
+    }
+  ],
+  "entries": [
+    {
+      "code": "validation-failed",
+      "title": "Validation failed",
+      "summary": "The request was well-formed but one or more values violate the resource contract.",
+      "observed": true,
+      "http_statuses": [422],
+      "retry_class": "never",
+      "extensions": ["field_violations"]
+    },
+    {
+      "code": "authorization-denied",
+      "title": "Authorization denied",
+      "summary": "The authenticated caller may not perform this operation; missing and denied resources stay indistinguishable.",
+      "observed": true,
+      "http_statuses": [403],
+      "retry_class": "never"
+    },
+    {
+      "code": "insufficient-capability",
+      "title": "Insufficient capability",
+      "summary": "The credential lacks the route capability required for this operation.",
+      "observed": true,
+      "http_statuses": [403],
+      "retry_class": "never"
+    },
+    {
+      "code": "authentication-throttled",
+      "title": "Authentication throttled",
+      "summary": "Authentication attempts are rate limited; retry after the advertised delay.",
+      "observed": true,
+      "retry_class": "after_delay",
+      "extensions": ["retry_after_seconds"]
+    },
+    {
+      "code": "step-up-required",
+      "title": "Step-up required",
+      "summary": "The operation needs fresh session-bound step-up proof that bearer credentials cannot supply; native surfaces report the operation unsupported.",
+      "observed": true,
+      "retry_class": "never"
+    },
+    {
+      "code": "high-impact-authentication-required",
+      "title": "High-impact authentication required",
+      "summary": "Consuming a high-impact approval requires a fresh authenticator proof bound to a browser session.",
+      "observed": true,
+      "retry_class": "never"
+    },
+    {
+      "code": "precondition-failed",
+      "title": "Precondition failed",
+      "summary": "The supplied If-Match validator is stale; re-read the resource and decide with the fresh version.",
+      "observed": true,
+      "http_statuses": [412],
+      "retry_class": "after_precondition_refresh",
+      "extensions": ["expected_version", "actual_version"]
+    },
+    {
+      "code": "precondition-required",
+      "title": "Precondition required",
+      "summary": "The mutation needs an If-Match validator and none was supplied.",
+      "observed": true,
+      "http_statuses": [428],
+      "retry_class": "after_precondition_refresh"
+    },
+    {
+      "code": "invalid-if-match",
+      "title": "Invalid If-Match",
+      "summary": "The If-Match header is malformed or uses a weak validator.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "idempotency-key-required",
+      "title": "Idempotency key required",
+      "summary": "The mutation needs a caller-generated Idempotency-Key header and none was supplied.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "invalid-idempotency-key",
+      "title": "Invalid idempotency key",
+      "summary": "The Idempotency-Key header violates the 8 to 128 character contract.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "idempotency-key-reused",
+      "title": "Idempotency key reused",
+      "summary": "The key was already used with different request data; mint a new key for the new intent.",
+      "observed": true,
+      "http_statuses": [422],
+      "retry_class": "never"
+    },
+    {
+      "code": "idempotency-in-progress",
+      "title": "Idempotent request in progress",
+      "summary": "An identical request currently holds the processing lease; retry after it completes.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "after_delay",
+      "extensions": ["retry_after_seconds"]
+    },
+    {
+      "code": "idempotency-authorization-changed",
+      "title": "Idempotent replay authorization changed",
+      "summary": "The replaying credential differs from the credential that started the operation; the replay is refused.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "never"
+    },
+    {
+      "code": "openapi-contract-unavailable",
+      "title": "Contract temporarily unavailable",
+      "summary": "The caller-specific OpenAPI contract failed a current-generation invariant and is served no-store with a retry delay.",
+      "observed": true,
+      "http_statuses": [503],
+      "retry_class": "after_delay",
+      "extensions": ["retry_after_seconds"],
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated"
+      ]
+    },
+    {
+      "code": "content-not-found",
+      "title": "Content not found",
+      "summary": "No visible content record has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "navigation-not-found",
+      "title": "Navigation not found",
+      "summary": "No visible menu or menu item has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "automation-not-found",
+      "title": "Automation not found",
+      "summary": "No visible schedule or job has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-definition-not-found",
+      "title": "Business definition not found",
+      "summary": "No policy-visible business definition has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-record-not-found",
+      "title": "Business record not found",
+      "summary": "No policy-visible business record has this identity; denial is indistinguishable by design.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-operation-not-found",
+      "title": "Business operation not found",
+      "summary": "No caller-bound operation result has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-approval-not-found",
+      "title": "Business approval not found",
+      "summary": "No visible approval request has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-schema-not-found",
+      "title": "Business schema not found",
+      "summary": "No visible business schema draft or plan has this identity.",
+      "observed": true,
+      "http_statuses": [404],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-schema-conflict",
+      "title": "Business schema conflict",
+      "summary": "The schema changed since it was read; re-read the current schema before retrying the change.",
+      "observed": true,
+      "retry_class": "after_precondition_refresh",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSchema/Application/BusinessSchemaConflict.php"
+      ]
+    },
+    {
+      "code": "business-record-validation-failed",
+      "title": "Business record validation failed",
+      "summary": "Record values violate the definition schema or its policy-filtered constraints.",
+      "observed": true,
+      "http_statuses": [422],
+      "retry_class": "never",
+      "extensions": ["field_violations"]
+    },
+    {
+      "code": "business-record-unique-conflict",
+      "title": "Business record unique conflict",
+      "summary": "A unique constraint of the definition rejects the supplied values.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-record-reference-conflict",
+      "title": "Business record reference conflict",
+      "summary": "A referenced record is missing, invisible or in a state that refuses the reference.",
+      "observed": true,
+      "http_statuses": [409],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-record-unavailable",
+      "title": "Business record unavailable",
+      "summary": "The record exists but its current lifecycle state excludes this operation.",
+      "observed": true,
+      "retry_class": "unspecified"
+    },
+    {
+      "code": "business-record-action-rejected",
+      "title": "Business action rejected",
+      "summary": "The typed custom action refused its command input or state binding.",
+      "observed": true,
+      "retry_class": "never"
+    },
+    {
+      "code": "business-relationship-rejected",
+      "title": "Business relationship rejected",
+      "summary": "The relation mutation violates the definition's relationship contract.",
+      "observed": true,
+      "retry_class": "never"
+    },
+    {
+      "code": "invalid-business-record-query",
+      "title": "Invalid business record query",
+      "summary": "The bounded query document violates its closed grammar or exceeds a declared limit.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "invalid-business-operation",
+      "title": "Invalid business operation",
+      "summary": "The operation reference is malformed or not bound to the caller.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "invalid-business-report-export",
+      "title": "Invalid business report export",
+      "summary": "The export request violates the bounded report export contract.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "business-report-validation-failed",
+      "title": "Business report validation failed",
+      "summary": "Report parameters violate the report's declared parameter schema.",
+      "observed": true,
+      "http_statuses": [422],
+      "retry_class": "never",
+      "extensions": ["field_violations"]
+    },
+    {
+      "code": "business-report-row-limit-exceeded",
+      "title": "Business report row limit exceeded",
+      "summary": "The report result exceeds the bounded row budget; narrow the parameters or use an export.",
+      "observed": true,
+      "retry_class": "never"
+    },
+    {
+      "code": "invalid-plan-request",
+      "title": "Invalid plan request",
+      "summary": "The non-executable change plan violates the plan preview contract.",
+      "observed": true,
+      "http_statuses": [400],
+      "retry_class": "never"
+    },
+    {
+      "code": "authentication-required",
+      "title": "Authentication required",
+      "summary": "The request lacks a valid bearer credential for this site; refusals carry an RFC 6750 challenge.",
+      "observed": false,
+      "http_statuses": [401],
+      "retry_class": "after_reauthentication"
+    },
+    {
+      "code": "site-context-invalid",
+      "title": "Site context invalid",
+      "summary": "The Kumwe-Site header is absent, duplicated, or does not match the site bound to the credential.",
+      "observed": false,
+      "http_statuses": [401],
+      "retry_class": "after_context_refresh"
+    },
+    {
+      "code": "payload-too-large",
+      "title": "Payload too large",
+      "summary": "The request body exceeds the declared size bound for this operation.",
+      "observed": false,
+      "http_statuses": [413],
+      "retry_class": "never"
+    }
+  ],
+  "core_evidence": [
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/ProblemDetailsResponseFactory.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Http/Middleware/ProblemDetailsMiddleware.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Errors-and-observability",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
+  ],
+  "security_invariants": [
+    "Human title and detail text is redacted, unstable and never a client control-flow contract; only the stable code and declared extensions are machine surface.",
+    "Registry codes never distinguish a denied resource from a missing one where core intentionally merges them.",
+    "Field violations disclose only fields the caller was allowed to submit; hidden fields never appear in violation lists.",
+    "Extension members carry no secrets, tokens, internal paths, queries or stack detail.",
+    "An unknown code is treated as its HTTP status class with retry class unspecified; it never disables validation or authorization handling.",
+    "Removing or renaming a published code is a breaking contract revision with a declared migration window."
+  ],
+  "adoption_requirements": ["CORE-API-001", "CORE-API-002"]
+}

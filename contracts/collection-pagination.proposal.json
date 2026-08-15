@@ -1,0 +1,97 @@
+{
+  "$schema": "./schemas/collection-pagination.schema.json",
+  "proposal_id": "kumwe.collection-pagination",
+  "proposal_version": "0.1.0-proposal.1",
+  "status": "proposal",
+  "authoritative": false,
+  "audited_core": {
+    "repository": "kumwe/cms",
+    "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
+    "observed_at": "2026-08-15"
+  },
+  "purpose": "Extend the collection envelope the generated business surface already proves — items beside an opaque signed continuation cursor with bounded page sizes and stable ordering — to every management collection, so a native client can read large sites without unbounded lists or invented totals. The audited content list is capped at a flat 100 records without continuation, and menu, user and job lists are unpaginated or limit-only; none of these has a bounded-read contract today.",
+  "envelope": {
+    "items_member": "items",
+    "next_cursor_member": "next_cursor",
+    "totals": "never_invented"
+  },
+  "limits": {
+    "page_size_minimum": 1,
+    "page_size_maximum": 200,
+    "page_size_default": 50,
+    "cursor_max_length": 2048
+  },
+  "collections": [
+    {
+      "id": "business_records",
+      "title": "Generated business browse and search",
+      "observed_behavior": "Opaque HMAC-signed keyset cursor, page size 1 to 200 with default 50, closed bounded query grammar, items with next_cursor and bounded aggregates.",
+      "proposed_behavior": "already_conformant",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessRecordQueryFactory.php"
+      ]
+    },
+    {
+      "id": "business_record_history",
+      "title": "Business record history",
+      "observed_behavior": "Bounded revision window read with a limit and version continuation.",
+      "proposed_behavior": "keep_bounded_window",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated-business-resources"
+      ]
+    },
+    {
+      "id": "content",
+      "title": "Content list",
+      "observed_behavior": "Flat 100-record cap without continuation, search, filter or declared ordering.",
+      "proposed_behavior": "adopt_cursor_envelope",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Content/ContentCollectionHandler.php"
+      ]
+    },
+    {
+      "id": "navigation",
+      "title": "Menu and menu item lists",
+      "observed_behavior": "Unpaginated lists without a declared bound.",
+      "proposed_behavior": "adopt_cursor_envelope",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Menus-and-navigation"
+      ]
+    },
+    {
+      "id": "identity",
+      "title": "User, role and token lists",
+      "observed_behavior": "Unpaginated lists without a declared bound; token lists never contain token material.",
+      "proposed_behavior": "adopt_cursor_envelope",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Users-groups-grants-and-tokens"
+      ]
+    },
+    {
+      "id": "automation",
+      "title": "Schedule and job lists",
+      "observed_behavior": "Limit-only recent-job reads without continuation.",
+      "proposed_behavior": "adopt_cursor_envelope",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Automation"
+      ]
+    }
+  ],
+  "core_evidence": [
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessRecordQueryFactory.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Content/ContentCollectionHandler.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md"
+  ],
+  "security_invariants": [
+    "Cursors are opaque and integrity-protected; a client never decodes, edits or fabricates one, and a tampered cursor is refused.",
+    "A cursor is bound to its collection, site and authorization context; it is never honored for another caller or context.",
+    "Continuation never widens disclosure: every page re-applies current row and field policy, so revoked visibility disappears mid-iteration.",
+    "Totals are never invented; a collection either declares an exact total or reports none.",
+    "Page size requests above the declared maximum are refused rather than silently clamped, so a client never mistakes a partial read for a complete one.",
+    "Stable ordering is declared per collection; a client never assumes insertion order."
+  ],
+  "adoption_requirements": [
+    "CORE-API-001",
+    "CORE-COLLECTION-001"
+  ]
+}

@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kumwe:proposal:schema:native-discovery:0.1.0",
+  "title": "Kumwe native discovery proposal schema",
+  "description": "Validates the non-authoritative proposal for a pre-authentication native client discovery resource.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "proposal_id",
+    "proposal_version",
+    "status",
+    "authoritative",
+    "audited_core",
+    "purpose",
+    "document_schema",
+    "proposed_resources",
+    "core_evidence",
+    "security_invariants",
+    "adoption_requirements"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "proposal_id": {
+      "const": "kumwe.native-discovery"
+    },
+    "proposal_version": {
+      "type": "string",
+      "pattern": "^0\\.[0-9]+\\.[0-9]+-proposal\\.[1-9][0-9]*$",
+      "maxLength": 40
+    },
+    "status": {
+      "const": "proposal"
+    },
+    "authoritative": {
+      "const": false
+    },
+    "audited_core": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "observed_at"],
+      "properties": {
+        "repository": {
+          "const": "kumwe/cms"
+        },
+        "commit": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$",
+          "maxLength": 40
+        },
+        "observed_at": {
+          "type": "string",
+          "format": "date",
+          "maxLength": 10
+        }
+      }
+    },
+    "purpose": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    },
+    "document_schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "proposed_resources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["method", "path", "authentication", "purpose"],
+        "properties": {
+          "method": {
+            "const": "GET"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^/api/v1/native/[a-z0-9/-]{1,80}$",
+            "maxLength": 96
+          },
+          "authentication": {
+            "const": "anonymous"
+          },
+          "purpose": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "core_evidence": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    },
+    "security_invariants": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 300
+      }
+    },
+    "adoption_requirements": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^CORE-[A-Z]+-[0-9]{3}$",
+        "maxLength": 40
+      }
+    }
+  }
+}

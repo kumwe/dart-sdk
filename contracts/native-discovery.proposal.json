@@ -1,0 +1,40 @@
+{
+  "$schema": "./schemas/native-discovery.schema.json",
+  "proposal_id": "kumwe.native-discovery",
+  "proposal_version": "0.1.0-proposal.1",
+  "status": "proposal",
+  "authoritative": false,
+  "audited_core": {
+    "repository": "kumwe/cms",
+    "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
+    "observed_at": "2026-08-15"
+  },
+  "purpose": "Give a native client one pre-authentication, non-secret, cacheable document that answers what it must know before authorization or feature routing: installation identity, exact allowed origins, compatibility versions and contract digest, supported authorization profiles, the site header rule, pre-authentication limits and the supported client contract window. The audited core serves an API identity document at GET /api/v1; this proposal extends that observed pattern with the fields a native application needs, without disclosing sites, policies or any authenticated metadata.",
+  "document_schema": "./schemas/native-discovery-document.schema.json",
+  "proposed_resources": [
+    {
+      "method": "GET",
+      "path": "/api/v1/native/discovery",
+      "authentication": "anonymous",
+      "purpose": "Serves the closed discovery document with a strong ETag; the document is identical for every anonymous caller and never varies by credential."
+    }
+  ],
+  "core_evidence": [
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Kernel/ContainerFactory.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+  ],
+  "security_invariants": [
+    "The document is non-secret and identical for every anonymous caller; it never lists sites, organizations, workspaces, users, policies or installed extensions.",
+    "Allowed origins are exact HTTPS origins; a client refuses to send credentials to an origin outside the list.",
+    "The support URL is display-only, opened in an external user agent, and never receives native credentials or tokens.",
+    "Advertised authorization profiles constrain which flows a client may attempt; an unlisted flow is not attempted as a fallback.",
+    "A client outside the advertised client-contract window refuses mutations before sending them rather than degrading silently.",
+    "The document cannot grant capability: every advertised capability is re-checked by server authorization on use."
+  ],
+  "adoption_requirements": [
+    "CORE-API-001",
+    "CORE-AUTH-001",
+    "CORE-CTX-001"
+  ]
+}

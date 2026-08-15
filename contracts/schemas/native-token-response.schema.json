@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kumwe:proposal:schema:native-token-response:0.1.0",
+  "title": "Kumwe native token response proposal schema",
+  "description": "Proposed closed wire shape of a successful native token endpoint response: the opaque credential beside the non-secret metadata a client needs to use it safely.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "access_token",
+    "token_type",
+    "expires_in",
+    "credential",
+    "context"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "access_token": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 2048
+    },
+    "token_type": {
+      "const": "Bearer"
+    },
+    "expires_in": {
+      "type": "integer",
+      "minimum": 60,
+      "maximum": 7776000
+    },
+    "refresh_token": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 2048
+    },
+    "scope": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]+(?: [A-Za-z0-9._:-]+)*$",
+      "maxLength": 2048
+    },
+    "credential": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference"],
+      "properties": {
+        "reference": {
+          "$ref": "#/$defs/identifier"
+        },
+        "family": {
+          "$ref": "#/$defs/identifier"
+        },
+        "purpose": {
+          "$ref": "#/$defs/identifier"
+        },
+        "audience": {
+          "$ref": "#/$defs/identifier"
+        },
+        "subject_reference": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["site"],
+      "properties": {
+        "site": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,190}$",
+          "maxLength": 191
+        },
+        "organization": {
+          "$ref": "#/$defs/identifier"
+        },
+        "workspace": {
+          "$ref": "#/$defs/identifier"
+        }
+      }
+    },
+    "authority_generations": {
+      "type": "object",
+      "maxProperties": 16,
+      "propertyNames": {
+        "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+        "maxLength": 64
+      },
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 191
+      }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,190}$",
+      "maxLength": 191
+    }
+  }
+}
