@@ -107,6 +107,14 @@ The provider owns authorization interaction and secure persistence. The SDK rece
 metadata; it never receives a username/password, second factor or recovery code. See
 [Authentication and context](authentication-and-context.md).
 
+The authentication-link flow ships as endpoint-free primitives the provider builds on: a
+`KumweAuthenticationLinkTicket` opens with a generated proof key and state, its `request` is what the
+application sends to the deployment, and its single-use completion — from the deep-link return URI or the
+manually typed cross-device code — yields the `KumweAuthenticationLinkGrant` the provider redeems once core
+adopts the contract. `KumweLoginArea` and `KumweAccountState` are the area and guest-arrival vocabulary,
+`KumweWebSessionHandoff` validates the single-use browser handoff against the exact deployment origin, and the
+`KumweAccountDirectory` port holds the non-secret multi-deployment account roster beside the credential store.
+
 ## Core resource conventions
 
 Generated resources follow a common vocabulary without erasing resource-specific contracts:

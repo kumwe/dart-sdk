@@ -1,10 +1,15 @@
 /// Pure Dart primitives for building Kumwe CMS clients.
 library;
 
+export 'src/auth/account_directory.dart';
+export 'src/auth/account_state.dart';
+export 'src/auth/authentication_link.dart';
 export 'src/auth/authorization_provider.dart';
 export 'src/auth/bearer_token_provider.dart';
 export 'src/auth/credential_reference.dart';
 export 'src/auth/credential_store.dart';
+export 'src/auth/login_area.dart';
+export 'src/auth/web_session_handoff.dart';
 export 'src/client/kumwe_client.dart';
 export 'src/client/kumwe_client_options.dart';
 export 'src/context/execution_context.dart';

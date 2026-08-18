@@ -1,15 +1,19 @@
 # Current status
 
-Status date: 2026-08-15
+Status date: 2026-08-18
 
 SDK stage: executable transport and contract foundation
 
 Audited core: `kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`
 
-Head drift: core's default branch has advanced eleven commits past the audited commit with `api/` byte-identical;
-the delta is mostly localization, migration and tooling work. The audit pin is retained. The localization changes
-(`LocalizedDefinitionText`, catalogue translation, wording administration) may move the `CORE-LOCALIZATION-001`
-assessment and need a targeted re-audit before that row is trusted for adoption review.
+Head drift: core's default branch (`df715e39c6269c50c6f4c73d6fb32d1570917945` at this status date) has advanced
+sixty commits past the audited commit. `api/openapi/kumwe-v1.json` gains the business-period family
+(`/api/v1/business-periods` plus close/reopen); the remainder is localization, quality-gate, deployment and
+Studio-integration work. A targeted re-audit of the authentication surface at head confirmed the audited picture
+is unchanged: password login at `/administrator/login` and `/portal/login`, pre-issued bearer tokens only, no
+mailer in `src/`, no self-registration and no `/api/v1/native/` resources. The audit pin is retained. The
+localization changes (`LocalizedDefinitionText`, catalogue translation, wording administration) may move the
+`CORE-LOCALIZATION-001` assessment and need a targeted re-audit before that row is trusted for adoption review.
 
 ## Programme status
 
@@ -41,8 +45,10 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Stable problem-code registry | Proposed | Draft under `contracts/`, seeded from the 40 `urn:kumwe:problem:` type URIs observed at the audited commit, including the four dynamically constructed business idempotency codes |
 | Uniform collection pagination | Proposed | Draft under `contracts/` extends the observed business cursor envelope; content remains capped at 100 without continuation |
 | Consistent idempotency semantics | Proposed | Draft under `contracts/` declares the two observed ledgers per family; the shared 24-hour text still contradicts them in core |
-| Native application authorization flow | Proposed | Draft under `contracts/` (PKCE-first, ADR 0006); core still exposes only pre-issued bearer tokens |
-| Native client bootstrap discovery | Proposed | Draft under `contracts/`; core serves an API identity document but no native discovery resource |
+| Native application authorization flow | Proposed | Draft under `contracts/` (authentication-link-first, ADR 0007; PKCE alternative, ADR 0006); core still exposes only pre-issued bearer tokens and password web login |
+| Guest arrival and positioning lifecycle | Proposed | Draft under `contracts/` (`CORE-ACCOUNT-001`); core creates users only through administration and the CLI |
+| Authenticated web-session handoff | Proposed | Draft under `contracts/` (`CORE-AUTH-002`); core mints web sessions only from password login |
+| Native client bootstrap discovery | Proposed | Draft under `contracts/` (now advertising sign-in areas); core serves an API identity document but no native discovery resource |
 | Media administration API | Missing | Public media fetch exists; management upload/list/delete is graphical |
 | Business-security administration API | Missing | Organizations, memberships, policies and step-up administration are graphical |
 | High-impact approval decision API | Missing by current design | Fresh browser session-bound step-up is required |
@@ -52,7 +58,7 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Durable client change feed | Missing | Internal outbox/events are not a client API |
 | Realtime client subscription | Missing | No SSE/WebSocket or push contract found |
 | Offline sync | Deferred | Foundations exist; queue/delta/reconciliation and numbering decision do not |
-| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context and the authorization-provider/credential-store ports; generated resource clients are blocked on core contract maturity |
+| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context, the authorization-provider/credential-store ports, and the authentication-link flow primitives (proof key, ticket, grant, login areas, account states, account directory, web-session handoff value); generated resource clients and all authorization endpoint behavior remain blocked on core contract maturity |
 
 ## Gate status
 

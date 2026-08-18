@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/native-discovery.schema.json",
   "proposal_id": "kumwe.native-discovery",
-  "proposal_version": "0.1.0-proposal.2",
+  "proposal_version": "0.2.0-proposal.1",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
@@ -9,7 +9,7 @@
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
-  "purpose": "Give a native client one pre-authentication, non-secret, cacheable document that answers what it must know before authorization or feature routing: installation identity, exact allowed origins, compatibility versions and contract digest, supported authorization profiles, the site header rule, pre-authentication limits and the supported client contract window. The audited core serves an API identity document at GET /api/v1; this proposal extends that observed pattern with the fields a native application needs, without disclosing sites, policies or any authenticated metadata.",
+  "purpose": "Give a native client one pre-authentication, non-secret, cacheable document that answers what it must know before authorization or feature routing: installation identity, exact allowed origins, compatibility versions and contract digest, supported authorization profiles, the sign-in areas the deployment enables (administrator, portal), the site header rule, pre-authentication limits and the supported client contract window. The audited core serves an API identity document at GET /api/v1; this proposal extends that observed pattern with the fields a native application needs, without disclosing sites, policies or any authenticated metadata. The document is what a multi-installation client stores per entered deployment URL, so adding, listing and switching between installations never requires a credential.",
   "document_schema": "./schemas/native-discovery-document.schema.json",
   "proposed_resources": [
     {
@@ -29,6 +29,7 @@
     "Allowed origins are exact HTTPS origins; a client refuses to send credentials to an origin outside the list.",
     "The support URL is display-only, opened in an external user agent, and never receives native credentials or tokens.",
     "Advertised authorization profiles constrain which flows a client may attempt; an unlisted flow is not attempted as a fallback.",
+    "Advertised areas constrain which sign-in targets a client may offer; an unlisted area is never presented, and listing an area grants no capability within it.",
     "A client outside the advertised client-contract window refuses mutations before sending them rather than degrading silently.",
     "The document cannot grant capability: every advertised capability is re-checked by server authorization on use."
   ],

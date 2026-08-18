@@ -130,7 +130,9 @@ metadata or fail closed; a stale generation is never used to preserve extension 
 
 Some extensions will continue to provide custom server-only routes. They are not represented as native screens. The
 host application may offer a separately configured “Open in browser” command for a trusted origin, but the URL comes
-from application/core routing policy—not from this manifest—and credentials are not inserted into it.
+from application/core routing policy—not from this manifest—and credentials are not inserted into it. When core
+adopts the web-session handoff (`CORE-AUTH-002`), that command may open the browser already signed in through the
+handoff's single-use URL; a bearer token, cookie or manifest-supplied URL still never enters the browser.
 
 ## Adoption requirements
 

@@ -99,6 +99,26 @@ void main() {
     );
   });
 
+  test('access tokens report area and account state as server metadata', () {
+    final token = KumweAccessToken(
+      token: BearerToken('example-access-token-0005'),
+      credential: KumweCredentialReference('credential-0005'),
+      boundSite: 'corporate',
+      area: KumweLoginArea.portal,
+      accountState: KumweAccountState.pending,
+    );
+    expect(token.area, KumweLoginArea.portal);
+    expect(token.accountState, KumweAccountState.pending);
+
+    final unreported = KumweAccessToken(
+      token: BearerToken('example-access-token-0006'),
+      credential: KumweCredentialReference('credential-0006'),
+      boundSite: 'corporate',
+    );
+    expect(unreported.area, isNull);
+    expect(unreported.accountState, isNull);
+  });
+
   test('credential store keys bind the exact origin and credential', () {
     final key = KumweCredentialStoreKey(
       origin: Uri.https('cms.example.invalid'),

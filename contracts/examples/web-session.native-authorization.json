@@ -1,0 +1,5 @@
+{
+  "$schema": "urn:kumwe:proposal:schema:native-web-session-response:0.1.0",
+  "handoff_url": "https://cms.example.invalid/native/web-session/redeem/example-handoff-0000000000000001",
+  "expires_in": 60
+}

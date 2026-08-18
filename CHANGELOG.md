@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.0-dev.4
+
+- Make the authentication link (the industry's magic link) the preferred native sign-in profile, per the
+  product owner's decision recorded in ADR 0007: revision `0.2.0-proposal.1` of the native-authorization
+  proposal adds the `authentication_link` profile and grant, the anonymous link-request resource, sign-in
+  areas (`administrator`, `portal`) as first-class vocabulary, email/link/manual-code limits, and the
+  guest-arrival semantics; the PKCE profile of ADR 0006 remains the supported alternative and its invariants
+  carry over unchanged.
+- Extend the token-response wire schema with the credential's bound `area` and the `account.state`
+  (`active`/`pending`) that carries the guest arrival experience, and the discovery document with the
+  deployment's advertised sign-in areas; add a pending-guest token-response example.
+- Propose the single-use authenticated web-session handoff (`CORE-AUTH-002`) with its closed response schema
+  and example, so a client can open the deployment's website already signed in without a token ever entering
+  the browser; record the guest arrival and positioning lifecycle as `CORE-ACCOUNT-001` in the contract index.
+- Implement the flow's client-side primitives without any endpoint behavior: `AuthenticationLinkProofKey`
+  (S256, RFC 7636 test vector), `KumweAuthenticationLinkTicket` with single-use constant-time state
+  verification and deep-link/manual completion, `KumweLoginArea`, `KumweAccountState`,
+  `KumweWebSessionHandoff` with exact-origin validation, the non-secret `KumweAccountDirectory` roster port
+  for Bitwarden-style multi-deployment account switching, and area/account-state metadata on
+  `KumweAccessToken`.
+- Extend the security model with authentication-link misuse cases (interception, expiry/reuse, enumeration,
+  guest escape, handoff leakage) and widen the redaction rules to link codes, states, handoff URLs and email
+  addresses.
+
 ## 0.1.0-dev.3
 
 - Complete the problem-details registry against the audited source: the four dynamically constructed
