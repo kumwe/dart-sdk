@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kumwe:proposal:schema:contract-index:0.1.0",
+  "$id": "urn:kumwe:proposal:schema:contract-index:0.1.1",
   "title": "Kumwe client contract index proposal schema",
   "description": "Validates the non-authoritative SDK capability and profile requirement index.",
   "type": "object",
@@ -80,7 +80,7 @@
       "required": ["repository", "commit", "observed_at"],
       "properties": {
         "repository": {
-          "const": "kumwe/cms"
+          "const": "kumwe/app"
         },
         "commit": {
           "type": "string",
@@ -180,7 +180,7 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "pattern": "^kumwe/cms@[0-9a-f]{40}:[A-Za-z0-9_./-]+(?:#[A-Za-z0-9_.:-]+)?$",
+            "pattern": "^kumwe/app@[0-9a-f]{40}:[A-Za-z0-9_./-]+(?:#[A-Za-z0-9_.:-]+)?$",
             "maxLength": 360
           }
         },

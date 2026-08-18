@@ -4,7 +4,7 @@ Status date: 2026-08-18
 
 SDK stage: executable transport and contract foundation
 
-Audited core: `kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`
+Audited core: `kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`
 
 Head drift: core's default branch (`df715e39c6269c50c6f4c73d6fb32d1570917945` at this status date) has advanced
 sixty commits past the audited commit. `api/openapi/kumwe-v1.json` gains the business-period family

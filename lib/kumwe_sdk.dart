@@ -1,4 +1,4 @@
-/// Pure Dart primitives for building Kumwe CMS clients.
+/// Pure Dart primitives for building clients of the Kumwe core (`kumwe/app`).
 library;
 
 export 'src/auth/account_directory.dart';

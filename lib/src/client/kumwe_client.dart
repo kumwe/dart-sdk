@@ -11,6 +11,11 @@ import '../problem/api_exception.dart';
 import 'kumwe_client_options.dart';
 
 /// Static discovery document returned by `GET /api/v1`.
+///
+/// The `Kumwe CMS` literals below are observed wire values: the audited core
+/// still reports that product string after the repository's rename to
+/// `kumwe/app`. They change only when core changes its identity document,
+/// never to match repository naming.
 final class KumweApiDiscovery {
   /// Parses the stable Kumwe v1 discovery representation.
   factory KumweApiDiscovery.fromJson(Map<String, Object?> json) {

@@ -11,7 +11,7 @@ make a server endpoint exist or require core to preserve it.
 
 ## Decision
 
-`kumwe/cms` is authoritative for adopted REST, authentication, errors, runtime metadata and extension contribution
+`kumwe/app` is authoritative for adopted REST, authentication, errors, runtime metadata and extension contribution
 contracts. This repository may publish clearly marked proposals. Adoption requires core runtime, schemas, fixtures,
 compatibility policy and a released immutable artifact. The SDK imports that release by version and digest.
 

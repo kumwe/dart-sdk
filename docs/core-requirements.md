@@ -1,7 +1,7 @@
 # Core-facing requirements
 
 This document is an integration backlog, not a claim that Kumwe core already exposes these contracts. The status is
-derived from the audit of `kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`. Machine-readable counterparts are
+derived from the audit of `kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`. Machine-readable counterparts are
 in [`contracts/contract-index.proposal.json`](../contracts/contract-index.proposal.json).
 
 ## Audit summary

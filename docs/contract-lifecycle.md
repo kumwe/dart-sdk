@@ -4,10 +4,10 @@
 
 | Contract or artifact | Authority before adoption | Long-term owner |
 | --- | --- | --- |
-| Core REST routes, DTOs, errors and auth schemes | `kumwe/cms` current source | `kumwe/cms` |
-| Generated business definition/record wire contract | `kumwe/cms` current source | `kumwe/cms` |
-| Client capability index | Proposal in this repository | `kumwe/cms` once adopted |
-| Client-surface contribution grammar | Proposal in this repository | `kumwe/cms` once adopted |
+| Core REST routes, DTOs, errors and auth schemes | `kumwe/app` current source | `kumwe/app` |
+| Generated business definition/record wire contract | `kumwe/app` current source | `kumwe/app` |
+| Client capability index | Proposal in this repository | `kumwe/app` once adopted |
+| Client-surface contribution grammar | Proposal in this repository | `kumwe/app` once adopted |
 | Pinned core contract digest and generated Dart snapshot | None yet | This repository, derived from core |
 | Public Dart API and adapters | This repository | This repository |
 | Cross-release conformance fixtures | Both repositories | Joint, with identical fixture identities |

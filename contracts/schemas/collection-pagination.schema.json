@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kumwe:proposal:schema:collection-pagination:0.1.0",
+  "$id": "urn:kumwe:proposal:schema:collection-pagination:0.1.1",
   "title": "Kumwe uniform collection pagination proposal schema",
   "description": "Validates the non-authoritative proposal extending the observed opaque-cursor collection envelope to every management collection.",
   "type": "object",
@@ -47,7 +47,7 @@
       "required": ["repository", "commit", "observed_at"],
       "properties": {
         "repository": {
-          "const": "kumwe/cms"
+          "const": "kumwe/app"
         },
         "commit": {
           "type": "string",

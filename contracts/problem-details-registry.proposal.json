@@ -1,11 +1,11 @@
 {
   "$schema": "./schemas/problem-details-registry.schema.json",
   "proposal_id": "kumwe.problem-details.registry",
-  "proposal_version": "0.1.0-proposal.2",
+  "proposal_version": "0.1.0-proposal.3",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
-    "repository": "kumwe/cms",
+    "repository": "kumwe/app",
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
@@ -170,7 +170,7 @@
       "retry_class": "after_delay",
       "extensions": ["retry_after_seconds"],
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated"
       ]
     },
     {
@@ -244,7 +244,7 @@
       "observed": true,
       "retry_class": "after_precondition_refresh",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSchema/Application/BusinessSchemaConflict.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSchema/Application/BusinessSchemaConflict.php"
       ]
     },
     {
@@ -255,8 +255,8 @@
       "http_statuses": [409],
       "retry_class": "never",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Business/BusinessRecordApiResponder.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Business/BusinessRecordApiResponder.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
       ]
     },
     {
@@ -267,7 +267,7 @@
       "http_statuses": [409],
       "retry_class": "never",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
       ]
     },
     {
@@ -278,7 +278,7 @@
       "http_statuses": [409],
       "retry_class": "after_delay",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
       ]
     },
     {
@@ -289,7 +289,7 @@
       "http_statuses": [409],
       "retry_class": "unspecified",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Exception/BusinessRecordIdempotencyConflict.php"
       ]
     },
     {
@@ -412,10 +412,10 @@
     }
   ],
   "core_evidence": [
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/ProblemDetailsResponseFactory.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Http/Middleware/ProblemDetailsMiddleware.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Errors-and-observability",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/ProblemDetailsResponseFactory.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Http/Middleware/ProblemDetailsMiddleware.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Errors-and-observability",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
   ],
   "security_invariants": [
     "Human title and detail text is redacted, unstable and never a client control-flow contract; only the stable code and declared extensions are machine surface.",
