@@ -1,6 +1,8 @@
 # ADR 0006: native authorization is PKCE-first through an external user agent
 
-- Status: Accepted
+- Status: Superseded in part by [ADR 0007](0007-authentication-link-is-the-primary-sign-in.md) — the preferred
+  profile is now the authentication link; this ADR's invariants and the PKCE profile itself carry over as the
+  supported alternative
 - Date: 2026-08-15
 
 ## Context

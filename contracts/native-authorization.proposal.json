@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/native-authorization.schema.json",
   "proposal_id": "kumwe.native-authorization",
-  "proposal_version": "0.1.0-proposal.2",
+  "proposal_version": "0.2.0-proposal.1",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
@@ -9,10 +9,17 @@
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
-  "purpose": "Give desktop and mobile applications a reviewed way for a user to sign in to Kumwe without an administrator pre-issuing a bearer token. The audited core only issues tokens through the users.manage REST route, the administrator browser and the token:create CLI, so a native client cannot bootstrap its own credential today. The proposal is OAuth 2.1 authorization code with PKCE through the system browser, with refresh rotation and revocation, binding every issued token to its site and reported context exactly as observed tokens are bound.",
+  "purpose": "Give native applications a reviewed way for a user to sign in to Kumwe without an administrator pre-issuing a bearer token. The audited core issues tokens only through the users.manage REST route, the administrator browser and the token:create CLI, and signs people in on the web with passwords, so a native client cannot bootstrap its own credential today. The preferred profile is the authentication link: the client sends core an email address, a target area (administrator or portal) and an S256 proof-key challenge; core emails a single-use link that returns the user to the requesting client, which redeems the link code with its verifier at the token endpoint for a site- and area-bound bearer credential with rotating refresh. An unknown address arrives as a pending guest account rather than an error. Authorization code with PKCE stays a supported alternative; every profile ends in the same closed token response, with revocation, logout and a single-use web-session handoff.",
   "token_response_schema": "./schemas/native-token-response.schema.json",
-  "preferred_profile": "authorization_code_pkce",
+  "web_session_response_schema": "./schemas/native-web-session-response.schema.json",
+  "preferred_profile": "authentication_link",
   "profiles": [
+    {
+      "id": "authentication_link",
+      "title": "Authentication link",
+      "summary": "Core emails a single-use sign-in link bound to the requesting client's S256 challenge and target area; opening it returns the user to that client, which redeems the link code with its verifier for a site- and area-bound bearer credential. Unknown addresses arrive as pending guest accounts.",
+      "state": "proposed"
+    },
     {
       "id": "authorization_code_pkce",
       "title": "Authorization code with PKCE",
@@ -35,9 +42,10 @@
   "vocabulary": {
     "code_challenge_methods": ["S256"],
     "response_types": ["code"],
-    "grant_types": ["authorization_code", "refresh_token"],
+    "grant_types": ["authentication_link", "authorization_code", "refresh_token"],
     "token_types": ["Bearer"],
-    "redirect_kinds": ["loopback", "private_use_scheme"]
+    "redirect_kinds": ["loopback", "private_use_scheme", "claimed_https"],
+    "areas": ["administrator", "portal"]
   },
   "limits": {
     "code_verifier_min_length": 43,
@@ -49,26 +57,43 @@
     "expires_in_min_seconds": 300,
     "expires_in_max_seconds": 7776000,
     "scope_max_length": 1024,
-    "token_response_max_bytes": 16384
+    "token_response_max_bytes": 16384,
+    "email_address_max_length": 254,
+    "link_ttl_min_seconds": 60,
+    "link_ttl_max_seconds": 900,
+    "link_manual_code_max_length": 32,
+    "web_session_ttl_max_seconds": 60
   },
   "proposed_resources": [
     {
       "method": "GET",
       "path": "/api/v1/native/authorization-metadata",
       "authentication": "anonymous",
-      "purpose": "Non-secret authorization server metadata subset: authorization, token and revocation endpoints, supported challenge methods, grant types and redirect kinds, so a client never assembles endpoints from convention."
+      "purpose": "Non-secret authorization server metadata subset: authentication-link, authorization, token, revocation and web-session endpoints, supported challenge methods, grant types, areas and redirect kinds, so a client never assembles endpoints from convention."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/native/authentication-link",
+      "authentication": "anonymous",
+      "purpose": "Accepts an email address, target area and S256 code challenge and always answers with the same accepted shape; core emails a single-use sign-in link for the area when the address resolves, or a guest-arrival link that creates a pending account when it does not."
     },
     {
       "method": "GET",
       "path": "/api/v1/native/authorize",
       "authentication": "anonymous",
-      "purpose": "Authorization endpoint opened in the external user agent; core authenticates the user and performs any step-up inside its own protected browser UI before returning code and state to the exact registered redirect."
+      "purpose": "Authorization endpoint opened in the external user agent for the PKCE alternative; core authenticates the user and performs any step-up inside its own protected browser UI before returning code and state to the exact registered redirect."
     },
     {
       "method": "POST",
       "path": "/api/v1/native/token",
       "authentication": "authorization_code",
-      "purpose": "Exchanges the authorization code with its PKCE verifier, or a refresh token, for the closed token response; refresh tokens rotate on every use."
+      "purpose": "Exchanges an authentication-link code or an authorization code with its PKCE verifier, or a refresh token, for the closed token response; refresh tokens rotate on every use and an expired or consumed link code fails as invalid_grant."
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/native/web-session",
+      "authentication": "bearer",
+      "purpose": "Issues a single-use, short-lived HTTPS handoff URL that signs the same subject into the credential's bound area in an external browser, so browser-only work continues without the client ever collecting a password; the URL expires unused within the declared bound."
     },
     {
       "method": "POST",
@@ -98,13 +123,24 @@
     "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
     "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Authentication/AccessTokenVerifier.php",
     "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Administration/TokenRotation.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Console/Command/CreateAccessTokenCommand.php"
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Console/Command/CreateAccessTokenCommand.php",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/portal.md",
+    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/getting-started.md"
   ],
   "security_invariants": [
     "Authorization happens in an external user agent at the exact HTTPS Kumwe origin; an embedded WebView or in-application form that collects credentials is not an acceptable substitute.",
     "The code challenge method is S256 only; plain is never offered, and a downgrade to an unlisted method fails the flow.",
-    "Redirect URIs are registered exactly as loopback or private-use scheme values and matched exactly; no wildcard, path-prefix or open redirector is accepted.",
+    "Redirect URIs are registered exactly as loopback, private-use scheme or platform-verified claimed HTTPS values and matched exactly; no wildcard, path-prefix or open redirector is accepted.",
     "State is verified before the code is used and the verifier never leaves the application; code, state and verifier are single-use.",
+    "An authentication-link request is answered identically for known and unknown addresses; an unknown address creates a pending guest account positioned later by an authorized administrator, so the response never discloses whether an account exists.",
+    "The emailed link carries a single-use code bound to the requesting client's S256 challenge; redeeming it requires the verifier that never left that client, so an intercepted or forwarded email cannot complete sign-in anywhere else.",
+    "Authentication links expire within the declared bounded lifetime and are consumed on first redemption; a second open lands on a safe already-used page and never re-issues a code.",
+    "Link requests are rate limited per address and per requesting origin without changing the response shape, and the email names the requesting installation and area so an unexpected link is recognizably foreign.",
+    "A credential is bound to the single area named in its originating request; a portal credential never reaches administrator resources, and the bound area is reported in the token response, never inferred by the client.",
+    "A pending guest credential carries the minimum capability set: the client may only show the arrival page and learn the account state through refresh; positioning happens in core's administered UI and is announced by email, never asserted by the client.",
+    "The manual completion code shown on the link landing page is single-use, expires with its link and redeems only with the original client's verifier; it exists for cross-device delivery and is never an independent credential.",
+    "Web-session handoff URLs are issued only to an authenticated native credential, are single-use, expire unused within the declared bound, bind the browser session to the same subject and area, are served no-store and never appear in logs or diagnostics.",
+    "Persistent sign-in lives in the rotating refresh family: a deployment may bound family lifetime, access tokens stay short-lived, and staying signed in never extends an access token or bypasses revocation, epoch or policy-generation checks.",
     "Issued tokens carry the same site, audience, purpose, family and delegation bindings as observed pre-issued tokens; issuance may only reduce effective authority.",
     "Refresh rotation is atomic from the application's perspective: old and new credentials are never mixed across one request, and a reused rotated refresh token revokes the family.",
     "Access and refresh tokens enter an application-selected secure credential store only; they never appear in preferences, logs, crash reports or analytics.",
@@ -115,6 +151,8 @@
   "adoption_requirements": [
     "CORE-API-002",
     "CORE-AUTH-001",
-    "CORE-CTX-001"
+    "CORE-AUTH-002",
+    "CORE-CTX-001",
+    "CORE-ACCOUNT-001"
   ]
 }

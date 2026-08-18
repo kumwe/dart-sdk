@@ -1,5 +1,5 @@
 {
-  "$schema": "urn:kumwe:proposal:schema:native-discovery-document:0.1.0",
+  "$schema": "urn:kumwe:proposal:schema:native-discovery-document:0.2.0",
   "installation": {
     "reference": "installation-example-0001",
     "display_name": "Example Kumwe Installation"
@@ -17,8 +17,9 @@
     "support_url": "https://support.example.invalid/kumwe"
   },
   "authorization": {
-    "profiles": ["authorization_code_pkce", "preissued_bearer"],
-    "metadata_path": "/api/v1/native/authorization-metadata"
+    "profiles": ["authentication_link", "authorization_code_pkce", "preissued_bearer"],
+    "metadata_path": "/api/v1/native/authorization-metadata",
+    "areas": ["administrator", "portal"]
   },
   "context": {
     "site_header": "Kumwe-Site",

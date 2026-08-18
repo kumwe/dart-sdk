@@ -1,7 +1,7 @@
 {
   "$schema": "./schemas/contract-index.schema.json",
   "proposal_id": "kumwe.dart-sdk.contract-index",
-  "proposal_version": "0.1.0-proposal.2",
+  "proposal_version": "0.2.0-proposal.1",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
@@ -65,7 +65,9 @@
         "CORE-SESSION-001",
         "CORE-APPROVAL-001",
         "CORE-KIS-001",
-        "CORE-EXTENSION-001"
+        "CORE-EXTENSION-001",
+        "CORE-AUTH-002",
+        "CORE-ACCOUNT-001"
       ]
     },
     {
@@ -84,7 +86,9 @@
         "CORE-SURFACE-001",
         "CORE-LOCALIZATION-001",
         "CORE-SESSION-001",
-        "CORE-APPROVAL-001"
+        "CORE-APPROVAL-001",
+        "CORE-AUTH-002",
+        "CORE-ACCOUNT-001"
       ]
     },
     {
@@ -167,12 +171,44 @@
       "state": "proposed",
       "contract_plane": "invariant",
       "required_for": ["business_companion", "cms_management", "administrator_parity", "portal_parity", "realtime_updates", "offline_sync"],
-      "summary": "Adopt a reviewed external-user-agent PKCE, device, or equivalent native application authorization flow with refresh, revocation and logout semantics.",
+      "summary": "Adopt a reviewed native sign-in flow with the emailed authentication link as the preferred profile: an S256 proof-key-bound single-use link targeting one area (administrator or portal), redeemed by the requesting client for an area-bound credential with rotating refresh, revocation and logout semantics; external-user-agent PKCE remains the reviewed alternative.",
       "core_evidence": [
         "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
         "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
       ],
       "adoption": "core_decision_required"
+    },
+    {
+      "id": "CORE-AUTH-002",
+      "capability_id": "kumwe.core.auth.web-session-handoff",
+      "title": "Authenticated web-session handoff",
+      "priority": "P1",
+      "state": "proposed",
+      "contract_plane": "invariant",
+      "required_for": ["administrator_parity", "portal_parity"],
+      "summary": "Exchange an authenticated native credential for a single-use, short-lived HTTPS handoff URL that signs the same subject into the credential's bound area in an external browser, so browser-only operations continue without collecting a password in the client; the handoff cannot broaden authority and does not make browser-only outcomes part of native parity.",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Middleware/AdministratorSessionMiddleware.php",
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication"
+      ],
+      "adoption": "core_change_required",
+      "depends_on": ["CORE-AUTH-001"]
+    },
+    {
+      "id": "CORE-ACCOUNT-001",
+      "capability_id": "kumwe.core.account.guest-arrival",
+      "title": "Guest arrival and positioning lifecycle",
+      "priority": "P0",
+      "state": "proposed",
+      "contract_plane": "invariant",
+      "required_for": ["administrator_parity", "portal_parity"],
+      "summary": "Requesting an authentication link for an unknown address creates a pending guest account instead of an error: designated stewards are notified, the guest signs in to a minimal arrival context, an authorized administrator positions the account, and the person is notified by email when access is granted; the audited core creates users only through administration and the CLI.",
+      "core_evidence": [
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/getting-started.md",
+        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Identity/AccessControlApiHandler.php"
+      ],
+      "adoption": "core_change_required",
+      "depends_on": ["CORE-AUTH-001"]
     },
     {
       "id": "CORE-CTX-001",

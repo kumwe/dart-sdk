@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kumwe:proposal:schema:native-authorization:0.1.0",
+  "$id": "urn:kumwe:proposal:schema:native-authorization:0.2.0",
   "title": "Kumwe native application authorization proposal schema",
-  "description": "Validates the non-authoritative proposal for a user-facing native application authorization profile with refresh, revocation and logout semantics.",
+  "description": "Validates the non-authoritative proposal for a user-facing native application authorization profile with authentication-link sign-in, refresh, revocation, logout and web-session handoff semantics.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -14,6 +14,7 @@
     "audited_core",
     "purpose",
     "token_response_schema",
+    "web_session_response_schema",
     "preferred_profile",
     "profiles",
     "vocabulary",
@@ -59,6 +60,12 @@
       "minLength": 1,
       "maxLength": 200
     },
+    "web_session_response_schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "minLength": 1,
+      "maxLength": 200
+    },
     "preferred_profile": {
       "$ref": "#/$defs/profileName"
     },
@@ -79,7 +86,8 @@
         "response_types",
         "grant_types",
         "token_types",
-        "redirect_kinds"
+        "redirect_kinds",
+        "areas"
       ],
       "properties": {
         "code_challenge_methods": {
@@ -96,6 +104,16 @@
         },
         "redirect_kinds": {
           "$ref": "#/$defs/tokenList"
+        },
+        "areas": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["administrator", "portal"]
+          }
         }
       }
     },
@@ -112,7 +130,12 @@
         "expires_in_min_seconds",
         "expires_in_max_seconds",
         "scope_max_length",
-        "token_response_max_bytes"
+        "token_response_max_bytes",
+        "email_address_max_length",
+        "link_ttl_min_seconds",
+        "link_ttl_max_seconds",
+        "link_manual_code_max_length",
+        "web_session_ttl_max_seconds"
       ],
       "properties": {
         "code_verifier_min_length": {
@@ -164,6 +187,31 @@
           "type": "integer",
           "minimum": 1024,
           "maximum": 65536
+        },
+        "email_address_max_length": {
+          "type": "integer",
+          "minimum": 64,
+          "maximum": 320
+        },
+        "link_ttl_min_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 900
+        },
+        "link_ttl_max_seconds": {
+          "type": "integer",
+          "minimum": 300,
+          "maximum": 86400
+        },
+        "link_manual_code_max_length": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 64
+        },
+        "web_session_ttl_max_seconds": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 300
         }
       }
     },

@@ -1,6 +1,8 @@
 import '../context/execution_context.dart';
+import 'account_state.dart';
 import 'bearer_token_provider.dart';
 import 'credential_reference.dart';
+import 'login_area.dart';
 
 /// Why the SDK is asking its application for a token.
 enum KumweTokenRequestReason {
@@ -79,6 +81,8 @@ final class KumweAccessToken {
     String? purpose,
     String? audience,
     String? subjectReference,
+    KumweLoginArea? area,
+    KumweAccountState? accountState,
     Map<String, String> authorityGenerations = const {},
   }) {
     if (authorityGenerations.length > 16 ||
@@ -113,6 +117,8 @@ final class KumweAccessToken {
       purpose: purpose,
       audience: audience,
       subjectReference: subjectReference,
+      area: area,
+      accountState: accountState,
       authorityGenerations: Map.unmodifiable(authorityGenerations),
     );
   }
@@ -128,6 +134,8 @@ final class KumweAccessToken {
     required this.purpose,
     required this.audience,
     required this.subjectReference,
+    required this.area,
+    required this.accountState,
     required this.authorityGenerations,
   });
 
@@ -162,6 +170,14 @@ final class KumweAccessToken {
 
   /// Optional opaque reference to the authenticated subject.
   final String? subjectReference;
+
+  /// Sign-in area the server bound the credential to, when reported. A
+  /// portal credential never reaches administrator resources.
+  final KumweLoginArea? area;
+
+  /// Server-reported account state, when reported. A pending guest renders
+  /// only the arrival experience until the server reports otherwise.
+  final KumweAccountState? accountState;
 
   /// Server-supplied authority generation values bound to this credential,
   /// such as policy generation or security epoch. Keys and values are opaque.

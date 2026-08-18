@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kumwe:proposal:schema:native-token-response:0.1.0",
+  "$id": "urn:kumwe:proposal:schema:native-token-response:0.2.0",
   "title": "Kumwe native token response proposal schema",
   "description": "Proposed closed wire shape of a successful native token endpoint response: the opaque credential beside the non-secret metadata a client needs to use it safely.",
   "type": "object",
@@ -61,6 +61,21 @@
         },
         "subject_reference": {
           "$ref": "#/$defs/identifier"
+        },
+        "area": {
+          "type": "string",
+          "enum": ["administrator", "portal"]
+        }
+      }
+    },
+    "account": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state"],
+      "properties": {
+        "state": {
+          "type": "string",
+          "enum": ["active", "pending"]
         }
       }
     },

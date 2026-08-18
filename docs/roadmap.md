@@ -31,8 +31,10 @@ roadmap lifecycle, because core closes work only through that ledger.
 | Requirement | Drafted proposal | Decision core owns |
 | --- | --- | --- |
 | `CORE-API-002` | [`problem-details-registry.proposal.json`](../contracts/problem-details-registry.proposal.json) | Freeze the observed `urn:kumwe:problem:` codes as a versioned registry with statuses and retry classes |
-| `CORE-AUTH-001` | [`native-authorization.proposal.json`](../contracts/native-authorization.proposal.json) | Accept the PKCE-first profile ([ADR 0006](decisions/0006-native-authorization-is-pkce-first.md)) or select an equivalent reviewed flow |
-| `CORE-CTX-001` | [`native-discovery.proposal.json`](../contracts/native-discovery.proposal.json) | Adopt the pre-authentication discovery document and bind context selection to token issuance |
+| `CORE-AUTH-001` | [`native-authorization.proposal.json`](../contracts/native-authorization.proposal.json) | Accept the authentication-link-first profile ([ADR 0007](decisions/0007-authentication-link-is-the-primary-sign-in.md)), with PKCE as the reviewed alternative ([ADR 0006](decisions/0006-native-authorization-is-pkce-first.md)) |
+| `CORE-AUTH-002` | [`native-authorization.proposal.json`](../contracts/native-authorization.proposal.json) | Accept the single-use authenticated web-session handoff and its session-provenance semantics |
+| `CORE-ACCOUNT-001` | [`native-authorization.proposal.json`](../contracts/native-authorization.proposal.json) | Accept the guest arrival and positioning lifecycle: pending accounts, steward notification and email-announced activation |
+| `CORE-CTX-001` | [`native-discovery.proposal.json`](../contracts/native-discovery.proposal.json) | Adopt the pre-authentication discovery document — including advertised sign-in areas — and bind context selection to token issuance |
 | `CORE-MUTATION-001` | [`mutation-semantics.proposal.json`](../contracts/mutation-semantics.proposal.json) | Make per-family replay/precondition declarations normative and scope the shared 24-hour header text |
 | `CORE-SURFACE-001` | [`client-surface-contract.proposal.json`](../contracts/client-surface-contract.proposal.json) | Adopt the bounded declarative client-surface grammar and discovery resource |
 | `CORE-COLLECTION-001` | [`collection-pagination.proposal.json`](../contracts/collection-pagination.proposal.json) | Extend the observed business cursor envelope to management collections |
@@ -82,11 +84,15 @@ analysis gates.
 
 Target gate: **G4 — Native authorization/context beta**
 
-- Integrate the adopted authorization flow behind an application-supplied provider.
+- Integrate the adopted authentication-link flow behind an application-supplied provider, including the
+  deep-link return, the manual cross-device completion code, guest account states and area binding.
 - Support secure credential storage adapters without a platform-storage dependency in core models.
-- Implement explicit site/organization/workspace selection and invalidation.
+- Implement the multi-account roster: explicit origin/area/credential selection, switching and removal, plus
+  site/organization/workspace selection and invalidation.
+- Integrate the adopted web-session handoff with single-use, exact-origin, redacted URL handling.
 - Add retry classification, clock handling and redacted diagnostics.
-- Run token theft, redirect, downgrade, context-confusion and local-storage abuse cases.
+- Run token theft, link-interception, enumeration, guest-escape, redirect, downgrade, context-confusion and
+  local-storage abuse cases.
 
 Exit evidence: provider/context conformance fixtures, threat review, and end-to-end credential revocation tests.
 

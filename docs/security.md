@@ -58,11 +58,21 @@
 
 ## Native authorization misuse cases
 
-The [native authorization proposal](../contracts/native-authorization.proposal.json) ([ADR 0006](decisions/0006-native-authorization-is-pkce-first.md))
+The [native authorization proposal](../contracts/native-authorization.proposal.json)
+([ADR 0007](decisions/0007-authentication-link-is-the-primary-sign-in.md),
+[ADR 0006](decisions/0006-native-authorization-is-pkce-first.md))
 is security-sensitive; adoption review and later conformance work must exercise at least these misuse cases:
 
 | Misuse case | Required outcome |
 | --- | --- |
+| Emailed link intercepted, forwarded or opened by someone else | Redemption fails without the requesting client's verifier; no session is created for the opener |
+| Authentication link opened after expiry or a second time | Safe already-used/expired page; no code re-issue, no session |
+| Link requests probing which addresses exist | Identical response shape, timing discipline and rate limit for known and unknown addresses |
+| Link request flood toward one address or origin | Bounded rate limit per address and origin without changing the response shape |
+| Manual completion code typed into a different client | Redemption fails without the original ticket's verifier |
+| Guest credential used beyond the arrival experience | Server refuses; pending capability set is minimal and the client renders only the arrival page |
+| Deep-link return arriving unsolicited or replayed | State mismatch discards it; the ticket completes at most once |
+| Web-session handoff URL leaked, logged or reused | Single-use, bounded expiry, exact-origin validation and redaction keep a leaked URL dead |
 | Authorization response with mismatched or replayed `state` | Code discarded; flow fails without a token request |
 | Authorization code replayed after redemption | Second exchange refused; issued family revoked on evidence of reuse |
 | Code exchanged without or with a wrong PKCE verifier | Exchange refused; verifier never leaves the application |
@@ -117,9 +127,9 @@ Allowed diagnostic fields include:
 - SDK/core contract versions; and
 - non-sensitive site/context references if application policy permits.
 
-Forbidden fields include bearer/refresh tokens, cookies, authorization codes/verifiers, passwords, second factors,
-secret/write-only field values, complete mutation bodies, arbitrary error extensions and personally identifying
-record content.
+Forbidden fields include bearer/refresh tokens, cookies, authorization codes/verifiers, link codes and states,
+web-session handoff URLs, email addresses, passwords, second factors, secret/write-only field values, complete
+mutation bodies, arbitrary error extensions and personally identifying record content.
 
 `toString()` implementations for credentials, request bodies and records must be redacted by construction.
 
@@ -157,6 +167,10 @@ Before beta, automated tests cover:
 - logs/crash diagnostics containing sentinel secrets;
 - extension disable while a surface is cached/open;
 - authorization state/verifier mismatch and code replay;
+- authentication-link completion without the requesting ticket's verifier, after expiry, and across accounts;
+- guest-credential requests outside the arrival capability set;
+- account-roster and cache separation across origins, areas and credentials;
+- web-session handoff URLs pointing off-origin, reused, or appearing in diagnostics;
 - refresh rotation races and reuse of a rotated refresh token; and
 - logout with unreachable revocation.
 

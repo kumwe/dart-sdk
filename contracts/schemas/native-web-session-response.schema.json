@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kumwe:proposal:schema:native-web-session-response:0.1.0",
+  "title": "Kumwe native web-session handoff response proposal schema",
+  "description": "Proposed closed wire shape of a successful web-session handoff: a single-use, short-lived HTTPS URL that signs the credential's subject into its bound area in an external browser. The URL is secret material: it is served no-store, appears exactly once and never enters logs or diagnostics.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["handoff_url", "expires_in"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "format": "uri-reference",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "handoff_url": {
+      "type": "string",
+      "pattern": "^https://[^\\s]{1,300}$",
+      "maxLength": 320
+    },
+    "expires_in": {
+      "type": "integer",
+      "minimum": 10,
+      "maximum": 300
+    }
+  }
+}

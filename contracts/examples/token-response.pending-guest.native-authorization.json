@@ -1,0 +1,25 @@
+{
+  "$schema": "urn:kumwe:proposal:schema:native-token-response:0.2.0",
+  "access_token": "example-access-token-0000000000000000000000000000000000000002",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "example-refresh-token-000000000000000000000000000000000000002",
+  "scope": "account.self",
+  "credential": {
+    "reference": "credential-example-0002",
+    "family": "family-example-0002",
+    "purpose": "api",
+    "audience": "kumwe-http",
+    "subject_reference": "subject-example-0002",
+    "area": "portal"
+  },
+  "account": {
+    "state": "pending"
+  },
+  "context": {
+    "site": "corporate"
+  },
+  "authority_generations": {
+    "security_epoch": "1"
+  }
+}
