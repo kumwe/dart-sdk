@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kumwe:proposal:schema:native-discovery:0.1.0",
+  "$id": "urn:kumwe:proposal:schema:native-discovery:0.1.1",
   "title": "Kumwe native discovery proposal schema",
   "description": "Validates the non-authoritative proposal for a pre-authentication native client discovery resource.",
   "type": "object",
@@ -46,7 +46,7 @@
       "required": ["repository", "commit", "observed_at"],
       "properties": {
         "repository": {
-          "const": "kumwe/cms"
+          "const": "kumwe/app"
         },
         "commit": {
           "type": "string",

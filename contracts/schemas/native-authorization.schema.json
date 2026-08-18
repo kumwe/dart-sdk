@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:kumwe:proposal:schema:native-authorization:0.2.0",
+  "$id": "urn:kumwe:proposal:schema:native-authorization:0.2.1",
   "title": "Kumwe native application authorization proposal schema",
   "description": "Validates the non-authoritative proposal for a user-facing native application authorization profile with authentication-link sign-in, refresh, revocation, logout and web-session handoff semantics.",
   "type": "object",
@@ -276,7 +276,7 @@
       "required": ["repository", "commit", "observed_at"],
       "properties": {
         "repository": {
-          "const": "kumwe/cms"
+          "const": "kumwe/app"
         },
         "commit": {
           "type": "string",

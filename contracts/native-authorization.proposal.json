@@ -1,11 +1,11 @@
 {
   "$schema": "./schemas/native-authorization.schema.json",
   "proposal_id": "kumwe.native-authorization",
-  "proposal_version": "0.2.0-proposal.1",
+  "proposal_version": "0.2.0-proposal.2",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
-    "repository": "kumwe/cms",
+    "repository": "kumwe/app",
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
@@ -120,12 +120,12 @@
     "temporarily_unavailable"
   ],
   "core_evidence": [
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Authentication/AccessTokenVerifier.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Administration/TokenRotation.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Console/Command/CreateAccessTokenCommand.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/portal.md",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/getting-started.md"
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Authentication/AccessTokenVerifier.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Identity/Application/Administration/TokenRotation.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Console/Command/CreateAccessTokenCommand.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/portal.md",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/getting-started.md"
   ],
   "security_invariants": [
     "Authorization happens in an external user agent at the exact HTTPS Kumwe origin; an embedded WebView or in-application form that collects credentials is not an acceptable substitute.",

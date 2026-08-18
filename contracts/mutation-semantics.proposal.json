@@ -1,11 +1,11 @@
 {
   "$schema": "./schemas/mutation-semantics.schema.json",
   "proposal_id": "kumwe.mutation-semantics",
-  "proposal_version": "0.1.0-proposal.2",
+  "proposal_version": "0.1.0-proposal.3",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
-    "repository": "kumwe/cms",
+    "repository": "kumwe/app",
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
@@ -36,8 +36,8 @@
       "precondition": "mixed",
       "operation_status": false,
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Idempotency/HttpMutationPreauthorizer.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry-and-concurrency-contract"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Idempotency/HttpMutationPreauthorizer.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry-and-concurrency-contract"
       ]
     },
     {
@@ -69,8 +69,8 @@
       "precondition": "if_match_strong_v",
       "operation_status": true,
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Business/BusinessRecordApiResponder.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Business/BusinessRecordApiResponder.php"
       ]
     },
     {
@@ -94,7 +94,7 @@
       "precondition": "if_match_strong_v",
       "operation_status": true,
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/CustomBusinessActionExecutor.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/CustomBusinessActionExecutor.php"
       ]
     },
     {
@@ -109,7 +109,7 @@
       "precondition": "none",
       "operation_status": false,
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated-business-resources"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated-business-resources"
       ]
     }
   ],
@@ -119,10 +119,10 @@
     "User updates carry an optimistic version in the JSON document while content, navigation and business records use strong If-Match validators; the shared description does not say which form an operation needs."
   ],
   "core_evidence": [
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry-and-concurrency-contract",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Idempotency/PersistentIdempotencyMiddleware.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php"
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry-and-concurrency-contract",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Idempotency/PersistentIdempotencyMiddleware.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php"
   ],
   "security_invariants": [
     "A replayed response is byte-stable except for declared replay markers and never re-contains a secret-once value.",

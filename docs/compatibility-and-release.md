@@ -6,9 +6,9 @@ Four versions move independently:
 
 | Domain | Owner | Purpose |
 | --- | --- | --- |
-| Kumwe core release | `kumwe/cms` | Server runtime and complete release artifacts |
-| Core machine-contract generation | `kumwe/cms` | REST/errors/auth and auxiliary schemas |
-| Client-surface generation | `kumwe/cms` after adoption | Declarative extension/client vocabulary |
+| Kumwe core release | `kumwe/app` | Server runtime and complete release artifacts |
+| Core machine-contract generation | `kumwe/app` | REST/errors/auth and auxiliary schemas |
+| Client-surface generation | `kumwe/app` after adoption | Declarative extension/client vocabulary |
 | Dart SDK version | This repository | Public Dart API, implementation and supported matrix |
 
 The SDK never assumes equal numbers imply compatibility.

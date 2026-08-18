@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.1.0-dev.5
+
+- Follow the core repository's rename from `kumwe/cms` to `kumwe/app`: every audited-core pin, evidence
+  citation, schema constant and evidence pattern, documentation link and prose reference now names
+  `kumwe/app`, with the touched proposals and control schemas revised accordingly. The audited commit and
+  all observed behavior are unchanged — the rename is identity, not content. The `Kumwe CMS` literals in
+  the discovery, liveness and readiness clients stay exactly as observed on the wire: the audited core
+  still reports that product string, and the SDK tracks core's identity document, not its repository name.
+
 ## 0.1.0-dev.4
 
 - Make the authentication link (the industry's magic link) the preferred native sign-in profile, per the

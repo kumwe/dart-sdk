@@ -1,11 +1,11 @@
 {
   "$schema": "./schemas/native-discovery.schema.json",
   "proposal_id": "kumwe.native-discovery",
-  "proposal_version": "0.2.0-proposal.1",
+  "proposal_version": "0.2.0-proposal.2",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
-    "repository": "kumwe/cms",
+    "repository": "kumwe/app",
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
@@ -20,9 +20,9 @@
     }
   ],
   "core_evidence": [
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Kernel/ContainerFactory.php",
-    "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Kernel/ContainerFactory.php",
+    "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
   ],
   "security_invariants": [
     "The document is non-secret and identical for every anonymous caller; it never lists sites, organizations, workspaces, users, policies or installed extensions.",

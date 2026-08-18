@@ -6,7 +6,7 @@ Android, and iOS.
 > [!IMPORTANT]
 > This repository is at **proposal/foundation stage**. It does not yet provide a production-ready client, and
 > the JSON documents under [`contracts/`](contracts/README.md) are not Kumwe core contracts. They become
-> authoritative only after adoption and compatibility protection in `kumwe/cms`.
+> authoritative only after adoption and compatibility protection in `kumwe/app`.
 
 This work runs in parallel with the Kumwe core programme. It does not modify, supersede or supply evidence for
 core Version 2, Gate A or Gate B. It is preparatory design and conformance input for a **proposed Version 3 Native
@@ -24,7 +24,7 @@ extension-owned Dart code. See [ADR 0001](docs/decisions/0001-two-plane-sdk.md).
 
 ## What the audited core supports today
 
-This baseline was prepared against `kumwe/cms` commit
+This baseline was prepared against `kumwe/app` commit
 `4e5083b3fe43790605ae5c6c5bf8e392f9822efc`.
 
 | Capability | Current assessment |

@@ -1,11 +1,11 @@
 {
   "$schema": "./schemas/contract-index.schema.json",
   "proposal_id": "kumwe.dart-sdk.contract-index",
-  "proposal_version": "0.2.0-proposal.1",
+  "proposal_version": "0.2.0-proposal.2",
   "status": "proposal",
   "authoritative": false,
   "audited_core": {
-    "repository": "kumwe/cms",
+    "repository": "kumwe/app",
     "commit": "4e5083b3fe43790605ae5c6c5bf8e392f9822efc",
     "observed_at": "2026-08-15"
   },
@@ -142,8 +142,8 @@
       "required_for": ["business_companion", "cms_management", "administrator_parity", "portal_parity", "public_site_parity", "realtime_updates", "offline_sync"],
       "summary": "Publish complete request, success, documented failure, header, security and compatibility schemas for every operation admitted to an SDK profile.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
       ],
       "adoption": "core_change_required"
     },
@@ -157,8 +157,8 @@
       "required_for": ["business_companion", "cms_management", "administrator_parity", "portal_parity", "public_site_parity", "realtime_updates", "offline_sync"],
       "summary": "Expose finite actionable problem codes and typed extensions; human detail text must not be the client control-flow contract.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/README.md#P0-C"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-API-001"]
@@ -173,8 +173,8 @@
       "required_for": ["business_companion", "cms_management", "administrator_parity", "portal_parity", "realtime_updates", "offline_sync"],
       "summary": "Adopt a reviewed native sign-in flow with the emailed authentication link as the preferred profile: an S256 proof-key-bound single-use link targeting one area (administrator or portal), redeemed by the requesting client for an area-bound credential with rotating refresh, revocation and logout semantics; external-user-agent PKCE remains the reviewed alternative.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
       ],
       "adoption": "core_decision_required"
     },
@@ -188,8 +188,8 @@
       "required_for": ["administrator_parity", "portal_parity"],
       "summary": "Exchange an authenticated native credential for a single-use, short-lived HTTPS handoff URL that signs the same subject into the credential's bound area in an external browser, so browser-only operations continue without collecting a password in the client; the handoff cannot broaden authority and does not make browser-only outcomes part of native parity.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Middleware/AdministratorSessionMiddleware.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Middleware/AdministratorSessionMiddleware.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-AUTH-001"]
@@ -204,8 +204,8 @@
       "required_for": ["administrator_parity", "portal_parity"],
       "summary": "Requesting an authentication link for an unknown address creates a pending guest account instead of an error: designated stewards are notified, the guest signs in to a minimal arrival context, an authorized administrator positions the account, and the person is notified by email when access is granted; the audited core creates users only through administration and the CLI.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/getting-started.md",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Identity/AccessControlApiHandler.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/getting-started.md",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Identity/AccessControlApiHandler.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-AUTH-001"]
@@ -220,7 +220,7 @@
       "required_for": ["business_companion", "cms_management", "administrator_parity", "portal_parity", "realtime_updates", "offline_sync"],
       "summary": "Expose subject, site, selectable organization/workspace and generation bindings required for explicit requests and safe cache invalidation.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Authentication"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-AUTH-001"]
@@ -235,9 +235,9 @@
       "required_for": ["business_companion", "cms_management", "administrator_parity", "portal_parity", "offline_sync"],
       "summary": "Declare per-operation replay, late-duplicate, retry, status and optimistic-concurrency semantics without conflicting shared descriptions.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/CustomBusinessActionExecutor.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Retry",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Domain/BusinessRecordReplayWindow.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/CustomBusinessActionExecutor.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-API-002"]
@@ -252,8 +252,8 @@
       "required_for": ["business_companion", "administrator_parity", "portal_parity"],
       "summary": "Policy-filtered definition discovery, bounded query, CRUD, relations, history, actions, approval requests and operation status are present through fixed generic routes.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/architecture/generated-business-surfaces.md",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessSurfaceCatalog.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/architecture/generated-business-surfaces.md",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessSurfaceCatalog.php"
       ],
       "adoption": "not_required",
       "depends_on": ["CORE-API-001", "CORE-MUTATION-001"]
@@ -268,8 +268,8 @@
       "required_for": ["business_companion", "administrator_parity", "portal_parity"],
       "summary": "Policy-aware report discovery/execution and bounded asynchronous export status/download resources are present.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/business-integrations.md",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/business-integrations.md",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated"
       ],
       "adoption": "not_required",
       "depends_on": ["CORE-API-001"]
@@ -284,8 +284,8 @@
       "required_for": ["business_companion", "administrator_parity", "portal_parity"],
       "summary": "Adopt policy-filtered lifecycle-bound extension workspaces, navigation and semantic screen bindings without arbitrary executable client code.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/InterfaceStandard/SurfaceDefinition.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/OpenApi/Application/OpenApiExtensionActivationAdmission.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/InterfaceStandard/SurfaceDefinition.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/OpenApi/Application/OpenApiExtensionActivationAdmission.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-CTX-001", "CORE-API-002"]
@@ -300,8 +300,8 @@
       "required_for": ["business_companion", "administrator_parity", "portal_parity", "public_site_parity"],
       "summary": "Resolve metadata for an explicit locale or expose bounded translations and fallback across definitions, fields, views, actions, navigation and validation.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessDefinition/Domain/EntityTypeDefinition.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessSurfaceCatalog.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessDefinition/Domain/EntityTypeDefinition.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessSurfaceCatalog.php"
       ],
       "adoption": "core_change_required"
     },
@@ -315,8 +315,8 @@
       "required_for": ["cms_management", "administrator_parity"],
       "summary": "Define continuation, stable ordering, page limits and filter/sort semantics for all management collections instead of fixed unpageable caps.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Content/ContentCollectionHandler.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessRecordQueryFactory.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Delivery/Http/Api/Content/ContentCollectionHandler.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessRecordQueryFactory.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-API-001"]
@@ -331,8 +331,8 @@
       "required_for": ["business_companion", "administrator_parity", "portal_parity", "offline_sync"],
       "summary": "Expose the existing atomic header-plus-owned-lines application command through a typed machine resource with one authoritative aggregate result.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/BusinessRecordService.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Command/WriteDocumentCommand.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/BusinessRecordService.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessRecord/Application/Command/WriteDocumentCommand.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-MUTATION-001"]
@@ -347,8 +347,8 @@
       "required_for": ["business_companion", "administrator_parity"],
       "summary": "Expose the bounded atomic browser bulk semantics through REST/OpenAPI with one typed result and failure model.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessBulkMutation.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Delivery/Browser/GeneratedBusinessBrowserController.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Application/BusinessBulkMutation.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessSurface/Delivery/Browser/GeneratedBusinessBrowserController.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-BUSINESS-001", "CORE-MUTATION-001"]
@@ -363,8 +363,8 @@
       "required_for": ["cms_management", "administrator_parity"],
       "summary": "Provide typed list, metadata, upload/progress, replacement and deletion contracts; public media fetch alone is insufficient.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Handler/AdministratorMediaHandler.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Handler/AdministratorMediaHandler.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-API-001"]
@@ -379,8 +379,8 @@
       "required_for": ["administrator_parity"],
       "summary": "Provide typed organization, workspace, membership, row/field/action policy, separation-of-duty and step-up administration resources.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Handler/AdministratorBusinessSecurityHandler.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Handler/AdministratorBusinessSecurityHandler.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-AUTH-001", "CORE-API-001"]
@@ -395,8 +395,8 @@
       "required_for": ["administrator_parity", "portal_parity"],
       "summary": "Expose current account, active-session list/revoke, logout and selected membership context through an adopted user-client contract.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Middleware/AdministratorSessionMiddleware.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Administrator/Http/Middleware/AdministratorSessionMiddleware.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-AUTH-001", "CORE-CTX-001"]
@@ -411,8 +411,8 @@
       "required_for": ["administrator_parity", "portal_parity"],
       "summary": "Adopt a reviewed single-use exact-binding native remote approval protocol; until then high-impact outcomes remain outside advertised native parity and the SDK never collects factors itself.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/mcp.md#Tools"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Generated",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/mcp.md#Tools"
       ],
       "adoption": "core_decision_required",
       "depends_on": ["CORE-AUTH-001"]
@@ -427,8 +427,8 @@
       "required_for": ["administrator_parity"],
       "summary": "Expose semantic KIS surfaces, workspaces, navigation and effective presentation preferences in a policy-filtered machine contract.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/InterfaceStandard/SurfaceDefinition.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Presentation/Application/Preference/PresentationPreferenceResolver.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/InterfaceStandard/SurfaceDefinition.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Presentation/Application/Preference/PresentationPreferenceResolver.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-SURFACE-001"]
@@ -443,8 +443,8 @@
       "required_for": ["cms_management", "administrator_parity"],
       "summary": "Keep installed lifecycle typed and decide whether package installation remains a browser/host handoff; no arbitrary server path or client package execution is permitted.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Extensions",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/extension-contract/README.md"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/rest-api.md#Extensions",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/extension-contract/README.md"
       ],
       "adoption": "core_decision_required",
       "depends_on": ["CORE-API-001"]
@@ -459,8 +459,8 @@
       "required_for": ["public_site_parity"],
       "summary": "Expose anonymous page, route, navigation, media and bounded theme-semantic data; the client does not interpret Twig or arbitrary extension pages.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Kernel/ContainerFactory.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Presentation/SiteRenderer.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Kernel/ContainerFactory.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/Presentation/SiteRenderer.php"
       ],
       "adoption": "core_decision_required",
       "depends_on": ["CORE-LOCALIZATION-001"]
@@ -475,8 +475,8 @@
       "required_for": ["realtime_updates", "offline_sync"],
       "summary": "Provide a policy-filtered durable cursor, tombstones, retention and snapshot recovery; internal integration fan-out is not a client feed.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessIntegration/Infrastructure/RuntimeIntegrationEventTransport.php",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessIntegration/Infrastructure/RuntimeIntegrationEventTransport.php",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-CTX-001", "CORE-API-002"]
@@ -491,8 +491,8 @@
       "required_for": ["realtime_updates"],
       "summary": "Provide bounded authenticated SSE, WebSocket or push hints whose correctness is recovered through the durable change feed rather than delivery guarantees.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessIntegration/Infrastructure/RuntimeIntegrationEventTransport.php"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:api/openapi/kumwe-v1.json",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:src/BusinessIntegration/Infrastructure/RuntimeIntegrationEventTransport.php"
       ],
       "adoption": "core_change_required",
       "depends_on": ["CORE-EVENTS-001", "CORE-AUTH-001"]
@@ -507,8 +507,8 @@
       "required_for": ["offline_sync"],
       "summary": "Define delta pull, mutation push, acknowledgements, conflicts, attachments, authority changes and disconnected document numbering before offline correctness is advertised.",
       "core_evidence": [
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/findings.json#V2-ERP-007",
-        "kumwe/cms@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/findings.json#V2-POS-002"
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/findings.json#V2-ERP-007",
+        "kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc:docs/roadmap/findings.json#V2-POS-002"
       ],
       "adoption": "core_decision_required",
       "depends_on": ["CORE-DOCUMENT-001", "CORE-EVENTS-001", "CORE-MUTATION-001"]
