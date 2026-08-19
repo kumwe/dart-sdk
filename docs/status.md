@@ -53,13 +53,13 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Media administration API | Missing | Public media fetch exists; management upload/list/delete is graphical |
 | Business-security administration API | Missing | Organizations, memberships, policies and step-up administration are graphical |
 | High-impact approval decision API | Missing by current design | Fresh browser session-bound step-up is required |
-| Client-surface manifest | Proposed | Draft under `contracts/`; no core endpoint exists |
+| Client-surface manifest | Proposed | Draft under `contracts/`; no core endpoint exists. The SDK now carries an executable interpreter for the proposed grammar, so the vocabulary is proven by a working consumer rather than by schema review alone |
 | Arbitrary extension UI in native Flutter | Unsupported | Core extension routes/templates are server-side and not OpenAPI contributions |
 | Headless public-site contract | Missing | Public pages are server-rendered through active Twig/theme infrastructure |
 | Durable client change feed | Missing | Internal outbox/events are not a client API |
 | Realtime client subscription | Missing | No SSE/WebSocket or push contract found |
 | Offline sync | Deferred | Foundations exist; queue/delta/reconciliation and numbering decision do not |
-| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context, the authorization-provider/credential-store ports, and the authentication-link flow primitives (proof key, ticket, grant, login areas, account states, account directory, web-session handoff value); generated resource clients and all authorization endpoint behavior remain blocked on core contract maturity |
+| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context, the authorization-provider/credential-store ports, the authentication-link flow primitives (proof key, ticket, grant, login areas, account states, account directory, web-session handoff value) and the client-surface manifest interpreter; generated resource clients and all authorization endpoint behavior remain blocked on core contract maturity |
 
 ## Gate status
 

@@ -82,7 +82,9 @@ Target gate: **G3 — Dynamic runtime alpha**
 
 - Implement policy-filtered business catalog transport independent of generated models.
 - Validate runtime schemas and manifests against the adopted bounded grammar.
-- Add immutable manifest/value models with typed unsupported-vocabulary results; host screen models remain client-owned.
+- Immutable manifest models with typed unsupported-vocabulary results are implemented against the *proposed*
+  grammar (`ClientSurfaceInterpreter`); re-point them at the adopted grammar once core adopts a descendant. Host
+  screen models remain client-owned.
 - Cache by server-provided generation/checksum and invalidate on authority changes.
 - Prove activate/disable/upgrade lifecycle removal without loading executable extension code.
 

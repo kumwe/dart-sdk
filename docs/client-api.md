@@ -1,6 +1,6 @@
 # Client-facing API
 
-## Implemented foundation (`0.1.0-dev.3`)
+## Implemented foundation (`0.1.0-dev.5`)
 
 The current pure-Dart package exports an executable protocol foundation:
 
@@ -14,7 +14,9 @@ The current pure-Dart package exports an executable protocol foundation:
 - mutation primitives: validated `IdempotencyKey`, strong `EntityTag` with `"vN"` record versions, and
   conservative HTTP-semantics retry classification;
 - the immutable `KumweExecutionContext`/`KumweContextSelection` model with an authority-complete cache partition;
-- the `KumweAuthorizationProvider` and `KumweCredentialStore` application ports with non-secret token metadata; and
+- the `KumweAuthorizationProvider` and `KumweCredentialStore` application ports with non-secret token metadata;
+- `ClientSurfaceInterpreter`, reading the proposed client-surface grammar into immutable models with typed
+  per-surface rejections and omitted-hint notices; and
 - OpenAPI/JSON Schema proposal validators and repository tooling.
 
 `KumweClient` currently accepts `KumweClientOptions`, an injected `KumweTransport`, and optional contract-cache
