@@ -73,18 +73,40 @@ increase route counts.
 
 ## Runtime schema conformance
 
-The client-surface/runtime validator is tested for:
+`ClientSurfaceInterpreter` reads the proposed grammar today. Its suite covers:
 
-- maximum bytes, nodes, depth, properties and array items;
-- unknown keys and vocabulary versions;
-- owner namespace escape and duplicate IDs;
-- dangling screen/navigation/definition/view/report references;
-- incompatible widget and JSON Schema value family;
-- malformed locale tags and fallback;
-- lifecycle generation/checksum mismatch;
-- policy omission and mixed-context documents;
-- executable-looking unknown properties; and
-- deterministic canonical digest where adopted.
+- object property and array item bounds, and every declared string, integer and identifier bound, measured at
+  the ceiling as well as one past it so an off-by-one in the strict direction is visible;
+- encoded-byte bounding before parsing, through the `interpretJson` entry point;
+- a member present carrying an explicit `null`, which the closed grammar has no place for and which would
+  otherwise read as an omission and defeat the per-kind prohibitions;
+- optional presentation hints carrying non-text, refused rather than forgiven as unknown vocabulary;
+- string length measured in code points, so a non-BMP label is not refused at half its bound;
+- integers written with a fractional zero, which JSON Schema counts as integers;
+- unknown keys, closed-object violations and unreadable schema identity or version;
+- owner namespace escape on manifest, surface, screen and navigation identifiers;
+- duplicate surface, screen, navigation, capability, operation and contract identifiers;
+- dangling and cross-surface navigation-to-screen references;
+- per-kind screen shape, including members a kind forbids;
+- malformed locale tags and case-insensitive fallback;
+- unknown required vocabulary failing its surface closed while sibling surfaces stay admitted;
+- unknown optional presentation hints omitted with a notice, withdrawn when their surface is refused;
+- executable-looking unknown properties, which the closed grammar refuses; and
+- both shipped proposal examples interpreting with zero rejections and zero notices.
+
+Every protection above is mutation-checked: reverting the null guard, the code-point length, the malformed-hint
+refusal, the integral-number acceptance or the namespace check each turns the suite red.
+
+Outstanding, and not claimed as covered: JSON nesting-depth bounds, which the JSON value layer owns;
+widget-to-JSON-Schema value-family agreement, which needs an adopted business definition to compare against;
+lifecycle generation and checksum mismatch, which needs the cache integration; policy omission and
+mixed-context documents, which need a server; and deterministic canonical digest, which needs an adopted contract.
+
+Two rules are deliberately stricter than the manifest JSON Schema read alone, because the contract is that schema
+together with this repository's semantic rules: identifiers are unique within their scope, and every identifier
+sits inside the owning package's namespace. `uniqueItems` by itself would admit two screens sharing an identifier
+while differing elsewhere, which makes navigation resolution ambiguous. Adoption should tighten the schema to
+match rather than relax the interpreter.
 
 Valid manifests are decoded into immutable wire-level model snapshots. Flutter semantic and accessibility evidence
 belongs to the separate client conformance suite.

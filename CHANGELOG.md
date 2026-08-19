@@ -13,6 +13,31 @@
 - Restore `test/auth/authentication_link_test.dart` to text: the control-character rejection case carried a
   raw NUL byte, which made git classify the whole file as binary and hid its diff and blame. The escape
   `\u0000` builds the identical Dart string, so the assertion is unchanged.
+- Add `ClientSurfaceInterpreter`, an executable reader for the proposed extension client-surface grammar. It
+  validates the closed manifest schema again as defense in depth and exposes immutable typed models.
+- Scope failure deliberately: a malformed envelope refuses the whole manifest, while a surface that cannot be
+  fully understood is refused alone so the remaining surfaces stay usable. Required vocabulary outside its closed
+  set fails its surface closed; an optional presentation hint outside its set is omitted with a notice, and the
+  notices of a refused surface are withdrawn with it.
+- Enforce reference integrity, per-kind screen shape, identifier uniqueness, closed objects and every declared
+  bound, matching the manifest schema rather than trusting the server to have checked.
+- Enforce owner namespacing as defense in depth: a manifest, surface, screen or navigation identifier outside the
+  owning package's namespace is refused, so a contribution cannot present itself under another extension's
+  identity even if core admission were bypassed.
+- Add `LocalizedText` with case-insensitive language-tag fallback for bounded manifest translations.
+- Prove the grammar against the shipped proposal examples: both interpret with zero rejections and zero notices.
+- Refuse a member present carrying an explicit `null`. The grammar declares no nullable member, and reading a
+  null as an omission defeated every per-kind prohibition: a report screen could declare `definition: null` and
+  be admitted as well formed. Presence, not value, now decides a forbidden member.
+- Refuse an optional presentation hint carrying non-text. Forgiveness is for a word from a later contract
+  revision, not for arbitrary JSON, which the closed schema rejects outright.
+- Measure string length in Unicode code points rather than UTF-16 units, so a label in a non-BMP script is no
+  longer refused at roughly half its declared bound.
+- Accept an integer written with a fractional zero, which JSON Schema counts as an integer.
+- Bound translation language tags at their declared 35 characters; the pattern alone allowed unbounded subtag
+  repetition, admitting multi-megabyte keys.
+- Add `interpretJson`, which applies the contract's encoded-byte bound to the source before parsing it, where a
+  limit on an already-parsed document would come too late.
 
 ## 0.1.0-dev.4
 
@@ -37,7 +62,6 @@
 - Extend the security model with authentication-link misuse cases (interception, expiry/reuse, enumeration,
   guest escape, handoff leakage) and widen the redaction rules to link codes, states, handoff URLs and email
   addresses.
-
 ## 0.1.0-dev.3
 
 - Complete the problem-details registry against the audited source: the four dynamically constructed
