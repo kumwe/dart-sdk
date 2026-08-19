@@ -48,6 +48,7 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Native application authorization flow | Proposed | Draft under `contracts/` (authentication-link-first, ADR 0007; PKCE alternative, ADR 0006); core still exposes only pre-issued bearer tokens and password web login |
 | Guest arrival and positioning lifecycle | Proposed | Draft under `contracts/` (`CORE-ACCOUNT-001`); core creates users only through administration and the CLI |
 | Authenticated web-session handoff | Proposed | Draft under `contracts/` (`CORE-AUTH-002`); core mints web sessions only from password login |
+| Core product identity accepted by the clients | Observed, with a scheduled break | `KumweApiDiscovery` and `KumweLiveness` refuse any `product` value but the observed `Kumwe CMS`. Core's `V2-DOC-002` will change that value now that the repository is `kumwe/app`; this SDK must release acceptance of the new value before core closes it, or every deployed client fails at discovery and liveness. Tracked in the [roadmap](roadmap.md) |
 | Native client bootstrap discovery | Proposed | Draft under `contracts/` (now advertising sign-in areas); core serves an API identity document but no native discovery resource |
 | Media administration API | Missing | Public media fetch exists; management upload/list/delete is graphical |
 | Business-security administration API | Missing | Organizations, memberships, policies and step-up administration are graphical |

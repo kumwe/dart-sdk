@@ -6,8 +6,13 @@
   citation, schema constant and evidence pattern, documentation link and prose reference now names
   `kumwe/app`, with the touched proposals and control schemas revised accordingly. The audited commit and
   all observed behavior are unchanged — the rename is identity, not content. The `Kumwe CMS` literals in
-  the discovery, liveness and readiness clients stay exactly as observed on the wire: the audited core
-  still reports that product string, and the SDK tracks core's identity document, not its repository name.
+  the discovery and liveness clients stay exactly as observed on the wire: the audited core still reports
+  that product string, and the SDK tracks core's identity document, not its repository name. Core records
+  the eventual outward-identity change as `V2-DOC-002`; the roadmap now carries the SDK half of that
+  coupling, because both parsers reject an unrecognized product value.
+- Restore `test/auth/authentication_link_test.dart` to text: the control-character rejection case carried a
+  raw NUL byte, which made git classify the whole file as binary and hid its diff and blame. The escape
+  `\u0000` builds the identical Dart string, so the assertion is unchanged.
 
 ## 0.1.0-dev.4
 

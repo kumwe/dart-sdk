@@ -43,6 +43,10 @@ final class KumweApiDiscovery {
 }
 
 /// Static liveness document returned by `GET /health/live`.
+///
+/// The `Kumwe CMS` literal below is an observed wire value, kept for the
+/// reason given on [KumweApiDiscovery]; changing it needs core's identity
+/// document to change first.
 final class KumweLiveness {
   /// Parses the stable liveness representation.
   factory KumweLiveness.fromJson(Map<String, Object?> json) {

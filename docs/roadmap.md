@@ -42,7 +42,16 @@ roadmap lifecycle, because core closes work only through that ledger.
 Remaining package work:
 
 - Review the capability requirement index and the drafted proposals with core maintainers.
-- File the native-client findings in core's roadmap so the work exists in its authoritative ledger.
+- File the native-client findings in core's roadmap so the work exists in its authoritative ledger. Done:
+  core carries them as `V3-NC-001` … `V3-NC-004` under decision D17 and ADR 0009.
+- Accept core's outward product identity before it changes. `KumweApiDiscovery.fromJson` and
+  `KumweLiveness.fromJson` refuse any `product` value other than the observed `Kumwe CMS`, so the day core
+  closes its `V2-DOC-002` — the finding that renames the outward identity after the repository became
+  `kumwe/app` — every deployed client built on this SDK fails at discovery and liveness. The SDK must ship
+  acceptance of the new value first, and the transitional release accepts a bounded set of product values so
+  the two repositories never have to release in the same instant. This is a released-artifact ordering
+  constraint, not a contract change; it belongs to whichever milestone is current when core schedules
+  `V2-DOC-002`.
 - Complete request and success schemas for the supported core resource set (`CORE-API-001` has no machine proposal
   here; it is core's own P0-C machine-surface classification work).
 - Add upstream compatibility fixtures, semantic-version rules and deprecation metadata.
