@@ -1,5 +1,75 @@
 # Changelog
 
+## 0.1.0-dev.6
+
+The runtime wave: an executable, audit-grounded runtime foundation built from a fresh read-only audit of the
+pinned core (`kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`), with every wire shape, bound and header
+below traced to serializing core source. Nothing here invents endpoint behavior: business routes are observed
+core behavior; native authorization documents are read by proposal-scoped executable consumers.
+
+- Add the sealed result kernel: `KumweResult` with `KumweValueResult`, `KumweProblemResult` and
+  `KumweUnsupportedResult`, plus `KumweResponseMetadata` extracting status, correlation, entity tag and the
+  replay marker. Expected API failures are data; only programmer errors and protocol violations throw.
+- Add `KumweProblemRegistry`, an executable reader for the problem-details registry proposal, and
+  `KumweProblem` built through it: retry classes come from declared registry data, only registry-declared
+  extensions cross the boundary, an unregistered code is classified by HTTP status alone, and the
+  `Retry-After` header outranks a body copy. Problem diagnostics never include detail text.
+- Add `KumweCanonicalJson`: keys ordered by UTF-16 code units, a fixed escape vocabulary, refused binary
+  floating-point (exact values are strings on this wire), and a SHA-256 digest used for idempotency binding.
+- Add honest collection primitives: `KumweCursor` (opaque, bounded to the observed 65536-byte core cursor
+  cap, redacted from diagnostics) and `KumwePage` (immutable items, real continuation, no invented totals).
+- Add the mutation engine. `KumweMutationSemantics` reads the per-family mutation-semantics proposal —
+  replay/retention windows, lease, late-duplicate policy, precondition form and refusal codes per family —
+  so retry policy is declared data. `KumweMutationIntent` canonicalizes a body exactly once and freezes its
+  bytes, digest, idempotency key and optional strong precondition, so a changed body can never travel under
+  an old key. `KumweMutationOutcome` classifies applied/replayed/refused, and a transport failure after send
+  becomes an *ambiguous* outcome that keeps the intent alive: the SDK never reports "not applied" without
+  server evidence and never mints a fresh key because a request timed out.
+- Add executable native wire readers proving the proposed authorization documents as working consumers:
+  `KumweNativeDiscoveryDocument` (installation identity, exact HTTPS origins, base path and Kumwe-Site rule
+  pins, client-contract window, advertised profiles and sign-in areas, pre-auth limits),
+  `KumweNativeTokenResponse` (Bearer-only, bounded lifetimes, credential/area/account-state metadata,
+  authority generations, redacted diagnostics, released to exactly one `KumweAccessToken`),
+  `KumweNativeWebSessionResponse` (single-use HTTPS handoff URL, bounded TTL, origin-bound release, URL
+  never in diagnostics) and the bounded `KumweContractVersion`.
+- Model the observed generated business surface from the audit. `KumweBusinessDefinition` and
+  `KumweBusinessCatalog` read the policy-filtered definition documents: the closed 25-identifier `core.*`
+  field type vocabulary plus namespaced extension types, field uses and schema fragments, view kinds,
+  custom contracts, actions with transitions, six relationship kinds, workflow declarations, and the
+  omission discipline — a denied member is absent, never annotated, and an empty catalog is a valid
+  grant-free document.
+- Add the budget-enforced `KumweRecordQuery` filter AST: comparison/text/set/null/boolean/relation nodes,
+  sorts, search, projection and aggregates, refusing at the call site everything the server would refuse on
+  the wire — page size 1..200, ≤5 unique-field sorts, filter depth ≤8, ≤64 operations, ≤2 relation hops,
+  set 1..100, text 1..512, term 1..256, ≤64 fields, ≤4 includes, ≤16 unique-alias aggregates, count without
+  a field, exact values only (a `double` never enters the tree).
+- Read the record envelopes: `KumweBusinessRecord` (stored null and withheld value stay distinguishable),
+  relation records, `KumweRecordPageDocument` (items, opaque continuation, exact-decimal aggregates),
+  `KumweRecordMutationDocument` (closed operation vocabulary, replay flag, custom action result) and
+  `KumweRecordHistoryDocument` (version continuation that must be internally consistent).
+- Read the approval inspection surface (`KumweBusinessApproval`, inbox, votes; decisions stay in the
+  browser step-up by core design) and the caller-bound `KumweOperationStatusDocument`, where a served
+  status proves the ambiguous mutation committed.
+- Add `KumweBusinessApi`: a typed transport speaking every observed `/api/v1/business` route with the exact
+  observed header discipline — bearer plus `Kumwe-Site` everywhere, `Idempotency-Key` on every mutation,
+  strong `"vN"` `If-Match` where the record ledger demands one, none on search. It cross-checks the replay
+  header against the envelope and the response entity tag against the envelope version, returns
+  non-enumerating problems as data, and turns a mid-mutation transport failure into an ambiguous outcome.
+- Add `KumweSession`: one authenticated session per origin and context selection behind the
+  application-owned authorization provider, with single-flight acquisition, proactive expiry, context
+  binding checks, and the 401-once discipline — one silent refresh per rejection, escalation to interactive
+  re-authentication when a rejection-born credential is rejected again, and local sign-out that always
+  completes.
+- Add `KumweAuthorityPartition` and `KumweRuntimeCache`: a disposable, online-first cache whose partitions
+  digest origin, site, credential, organization, workspace and every authority generation, so any authority
+  movement drops the caller's whole cached view and two contexts can never collide.
+- Add the first cross-module abuse suite covering origin confinement, organization/workspace cache
+  collision, hostile deeply nested and oversized documents, Unicode-confusable identifiers, decimal
+  exponent/overflow spellings, changed-body key reuse, ambiguous-timeout settlement through the operation
+  ledger, stale-precondition terminal refusal and sentinel-secret diagnostics sweeps.
+- Documentation: `client-api.md` now separates what is implemented from the adoption-gated target shape
+  using the real type names; `status.md` and `roadmap.md` record the runtime wave against their gates.
+
 ## 0.1.0-dev.5
 
 - Follow the core repository's rename from `kumwe/cms` to `kumwe/app`: every audited-core pin, evidence
