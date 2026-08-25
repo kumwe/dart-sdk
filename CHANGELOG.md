@@ -29,7 +29,7 @@ core behavior; native authorization documents are read by proposal-scoped execut
   `KumweNativeDiscoveryDocument` (installation identity, exact HTTPS origins, base path and Kumwe-Site rule
   pins, client-contract window, advertised profiles and sign-in areas, pre-auth limits),
   `KumweNativeTokenResponse` (Bearer-only, bounded lifetimes, credential/area/account-state metadata,
-  authority generations, redacted diagnostics, released to exactly one `KumweAccessToken`),
+  authority generations, redacted diagnostics, secret material leaving only through `toAccessToken`),
   `KumweNativeWebSessionResponse` (single-use HTTPS handoff URL, bounded TTL, origin-bound release, URL
   never in diagnostics) and the bounded `KumweContractVersion`.
 - Model the observed generated business surface from the audit. `KumweBusinessDefinition` and
@@ -50,11 +50,17 @@ core behavior; native authorization documents are read by proposal-scoped execut
 - Read the approval inspection surface (`KumweBusinessApproval`, inbox, votes; decisions stay in the
   browser step-up by core design) and the caller-bound `KumweOperationStatusDocument`, where a served
   status proves the ambiguous mutation committed.
-- Add `KumweBusinessApi`: a typed transport speaking every observed `/api/v1/business` route with the exact
-  observed header discipline — bearer plus `Kumwe-Site` everywhere, `Idempotency-Key` on every mutation,
-  strong `"vN"` `If-Match` where the record ledger demands one, none on search. It cross-checks the replay
-  header against the envelope and the response entity tag against the envelope version, returns
-  non-enumerating problems as data, and turns a mid-mutation transport failure into an ambiguous outcome.
+- Add `KumweBusinessApi`: a typed transport speaking every observed `/api/v1/business` route — including
+  both read shapes of the record collection, the GET browse route (query-string grammar, string-only filter
+  literals) and the POST search route (typed literals) — with the exact observed header discipline: bearer
+  plus `Kumwe-Site` everywhere, `Idempotency-Key` on every mutation, strong `"vN"` `If-Match` where the
+  record ledger demands one, none on search or browse. It cross-checks the replay header against the
+  envelope and the response entity tag against the envelope version, and returns non-enumerating problems
+  as data. Mutation classification distinguishes three ends: a 4xx problem is a *refusal*, a transport
+  failure after send is *ambiguous* with the intent retained, and a 5xx answer is *ambiguous with the
+  problem kept* — a server error is never treated as evidence the mutation did not commit. The audited
+  approval route replays without a marker, so a replayed approval request is indistinguishable from a fresh
+  one and reports `applied` (documented on the method).
 - Add `KumweSession`: one authenticated session per origin and context selection behind the
   application-owned authorization provider, with single-flight acquisition, proactive expiry, context
   binding checks, and the 401-once discipline — one silent refresh per rejection, escalation to interactive
@@ -74,6 +80,20 @@ core behavior; native authorization documents are read by proposal-scoped execut
   disclosed definition — undisclosed fields, read-only and frozen writes, missing required writable fields,
   disallowed nulls and values outside the declared schema fragments are refused before a request and an
   idempotency key are spent. The server stays the authority; this only stops provably impossible writes.
+- Harden the wave against its own adversarial review, run against the pinned core as ground truth:
+  definition handles and relationship targets now use core's real namespaced grammar (`core.`/`site.<id>.`/
+  `<vendor>.<package>.` prefixes, dots and hyphens, 191 chars — a separator-free handle cannot exist), the
+  definition route also accepts the audited UUID form, and extension field types accept hyphenated composer
+  namespaces; empty-set `sum`/`min`/`max`/`avg` aggregates arrive as `null` exactly as core serves them;
+  text-filter and search-term bounds count Unicode code points the way core counts and whitespace-only
+  terms are refused; canonical JSON refuses unpaired surrogate code units, whose UTF-8 replacement would
+  have collided two different documents onto one digest; the web-session reader parses its URL tentatively
+  so a malformed secret URL can never leak through a `FormatException` message; authority-generation keys
+  and values are bounded at the wire; `KumweSession.handleAuthenticationFailure` now names the rejected
+  credential, so a late 401 from a request that traveled under a superseded token can neither invalidate
+  the fresh credential nor escalate a healthy session, and a sign-out racing an in-flight refresh or 401
+  recovery stays signed out with the fresh credential invalidated unused; `KumweRuntimeCache` gains
+  `retire` for credential rotation and bounds its live scopes so forgotten credentials cannot accumulate.
 - Documentation: `client-api.md` now separates what is implemented from the adoption-gated target shape
   using the real type names; `status.md` and `roadmap.md` record the runtime wave against their gates.
 

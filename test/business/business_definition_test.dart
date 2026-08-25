@@ -15,7 +15,7 @@ void main() {
   group('definition documents', () {
     test('the invoice fixture parses into a complete model', () {
       final definition = KumweBusinessDefinition.fromJson(fixture());
-      expect(definition.handle, 'invoice');
+      expect(definition.handle, 'kumwe.accounting.invoice');
       expect(definition.version, 4);
       expect(definition.owner.type, KumweDefinitionOwnerType.extension);
       expect(definition.owner.identifier, 'kumwe.accounting');
@@ -88,7 +88,7 @@ void main() {
       ).relationships;
       final lines = relationships['lines']!;
       expect(lines.kind, KumweRelationshipKind.ownedLineCollection);
-      expect(lines.target, 'invoice_line');
+      expect(lines.target, 'kumwe.accounting.invoice_line');
       expect(lines.ordered, isTrue);
       expect(relationships['customer']!.kind, KumweRelationshipKind.manyToOne);
     });
@@ -194,10 +194,41 @@ void main() {
 
     test('accepts namespaced extension types and refuses core drift', () {
       expect(KumweBusinessHandles.isFieldType('acct.legal_note'), isTrue);
+      expect(
+        KumweBusinessHandles.isFieldType('acme.crm-pro.rating'),
+        isTrue,
+        reason: 'composer vendor namespaces carry hyphens',
+      );
       expect(KumweBusinessHandles.isFieldType('core.money'), isTrue);
       expect(KumweBusinessHandles.isFieldType('core.new_thing'), isFalse);
       expect(KumweBusinessHandles.isFieldType('NoCaps.here'), isFalse);
       expect(KumweBusinessHandles.isFieldType('bare'), isFalse);
+    });
+
+    test('definition handles are always namespaced', () {
+      expect(
+        KumweBusinessHandles.isDefinitionHandle(
+          'site.default.neutral_business_record',
+        ),
+        isTrue,
+      );
+      expect(
+        KumweBusinessHandles.isDefinitionHandle(
+          'kumwe.asset-inspection-example.inspection',
+        ),
+        isTrue,
+      );
+      expect(KumweBusinessHandles.isDefinitionHandle('core.user'), isTrue);
+      expect(
+        KumweBusinessHandles.isDefinitionHandle('invoice'),
+        isFalse,
+        reason: 'a separator-free handle cannot pass owner namespacing',
+      );
+      expect(KumweBusinessHandles.isDefinitionHandle('Bad.Handle'), isFalse);
+      expect(
+        KumweBusinessHandles.isDefinitionHandle('a.${'b' * 200}'),
+        isFalse,
+      );
     });
   });
 
@@ -205,14 +236,14 @@ void main() {
     test('an empty catalog is a valid grant-free document', () {
       final catalog = KumweBusinessCatalog.fromJson({'data': <Object?>[]});
       expect(catalog.definitions, isEmpty);
-      expect(catalog.definition('invoice'), isNull);
+      expect(catalog.definition('kumwe.accounting.invoice'), isNull);
     });
 
     test('a populated catalog resolves definitions by handle', () {
       final catalog = KumweBusinessCatalog.fromJson({
         'data': [fixture()],
       });
-      expect(catalog.definition('invoice')?.version, 4);
+      expect(catalog.definition('kumwe.accounting.invoice')?.version, 4);
       expect(catalog.definition('ghost'), isNull);
     });
 

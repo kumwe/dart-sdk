@@ -182,7 +182,7 @@ final class KumweRecordPageDocument {
         );
       }
     }
-    final aggregates = <String, Object>{};
+    final aggregates = <String, Object?>{};
     final rawAggregates = json['aggregates'];
     if (rawAggregates != null) {
       if (rawAggregates is! Map<String, Object?> || rawAggregates.length > 16) {
@@ -197,13 +197,13 @@ final class KumweRecordPageDocument {
           );
         }
         final value = entry.value;
-        if (value is! int && value is! String) {
+        if (value != null && value is! int && value is! String) {
           throw FormatException(
-            'Aggregate ${entry.key} must be an integer count or an exact '
-            'decimal string.',
+            'Aggregate ${entry.key} must be an integer count, an exact '
+            'decimal string or the empty-set null.',
           );
         }
-        aggregates[entry.key] = value as Object;
+        aggregates[entry.key] = value;
       }
     }
     return KumweRecordPageDocument._(
@@ -221,8 +221,9 @@ final class KumweRecordPageDocument {
   final KumwePage<KumweBusinessRecord> page;
 
   /// Aggregate results keyed by alias: `int` for counts, exact decimal
-  /// `String` for sum/min/max/avg — never a binary float.
-  final Map<String, Object> aggregates;
+  /// `String` for sum/min/max/avg — never a binary float — and `null`
+  /// when a sum/min/max/avg matched zero rows, exactly as core serves it.
+  final Map<String, Object?> aggregates;
 
   @override
   String toString() =>

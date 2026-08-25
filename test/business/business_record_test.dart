@@ -72,6 +72,17 @@ void main() {
       );
     });
 
+    test('an empty-set aggregate null survives as core serves it', () {
+      final document = KumweRecordPageDocument.fromJson({
+        'items': <Object?>[],
+        'next_cursor': null,
+        'aggregates': {'total_sum': null, 'invoice_count': 0},
+      });
+      expect(document.aggregates.containsKey('total_sum'), isTrue);
+      expect(document.aggregates['total_sum'], isNull);
+      expect(document.aggregates['invoice_count'], 0);
+    });
+
     test('refuses out-of-bounds pages and malformed cursors', () {
       final overflowing = fixture('invoice-page.business-records');
       overflowing['items'] = List<Object?>.filled(

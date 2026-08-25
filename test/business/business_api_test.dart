@@ -93,9 +93,14 @@ void main() {
       final transport = FakeKumweTransport([
         jsonResponse(200, {'items': <Object?>[], 'next_cursor': null}),
       ]);
-      await api(transport).search('invoice', KumweRecordQuery(pageSize: 10));
+      await api(
+        transport,
+      ).search('kumwe.accounting.invoice', KumweRecordQuery(pageSize: 10));
       final request = transport.requests.single;
-      expect(request.uri.path, '/api/v1/business/records/invoice/search');
+      expect(
+        request.uri.path,
+        '/api/v1/business/records/kumwe.accounting.invoice/search',
+      );
       expect(request.headers['Idempotency-Key'], isNull);
       expect((jsonDecode(utf8.decode(request.body)) as Map)['page_size'], 10);
     });
@@ -115,7 +120,7 @@ void main() {
         }),
       ]);
       await api(transport).read(
-        'invoice',
+        'kumwe.accounting.invoice',
         'record-0001',
         fields: ['number', 'total'],
         includes: ['lines'],
@@ -144,7 +149,7 @@ void main() {
       );
       final outcome = await api(
         transport,
-      ).update('invoice', 'record-0001', intent);
+      ).update('kumwe.accounting.invoice', 'record-0001', intent);
       final request = transport.requests.single;
       expect(request.method, KumweHttpMethod.patch);
       expect(request.headers['Idempotency-Key'], 'intent-key-0000000001');
@@ -160,7 +165,7 @@ void main() {
         jsonResponse(200, mutationEnvelope(operation: 'delete')),
       ]);
       await api(transport).delete(
-        'invoice',
+        'kumwe.accounting.invoice',
         'record/with spaces',
         key: IdempotencyKey('intent-key-0000000002'),
         ifMatch: EntityTag.recordVersion(2),
@@ -168,7 +173,7 @@ void main() {
       final request = transport.requests.single;
       expect(
         request.uri.path,
-        '/api/v1/business/records/invoice/record%2Fwith%20spaces',
+        '/api/v1/business/records/kumwe.accounting.invoice/record%2Fwith%20spaces',
       );
       expect(
         request.body,
@@ -185,8 +190,9 @@ void main() {
         ifMatch: EntityTag.recordVersion(1),
       );
       expect(
-        () =>
-            api(FakeKumweTransport(const [])).create('invoice', preconditioned),
+        () => api(
+          FakeKumweTransport(const []),
+        ).create('kumwe.accounting.invoice', preconditioned),
         throwsArgumentError,
       );
     });
@@ -196,13 +202,15 @@ void main() {
         body: KumweJsonValue.from({'values': <String, Object?>{}}),
       );
       expect(
-        () => api(FakeKumweTransport(const [])).update('invoice', 'r-1', bare),
+        () => api(
+          FakeKumweTransport(const []),
+        ).update('kumwe.accounting.invoice', 'r-1', bare),
         throwsArgumentError,
       );
       expect(
         () => api(
           FakeKumweTransport(const []),
-        ).act('invoice', 'r-1', 'issue', bare),
+        ).act('kumwe.accounting.invoice', 'r-1', 'issue', bare),
         throwsArgumentError,
       );
     });
@@ -219,7 +227,7 @@ void main() {
       expect(
         () => api(
           FakeKumweTransport(const []),
-        ).history('invoice', 'r-1', limit: 201),
+        ).history('kumwe.accounting.invoice', 'r-1', limit: 201),
         throwsArgumentError,
       );
     });
@@ -237,7 +245,7 @@ void main() {
           ),
         ]);
         final outcome = await api(transport).update(
-          'invoice',
+          'kumwe.accounting.invoice',
           'record-0001',
           KumweMutationIntent(
             body: KumweJsonValue.from({'values': <String, Object?>{}}),
@@ -260,7 +268,7 @@ void main() {
         ]);
         await expectLater(
           api(transport).update(
-            'invoice',
+            'kumwe.accounting.invoice',
             'record-0001',
             KumweMutationIntent(
               body: KumweJsonValue.from({'values': <String, Object?>{}}),
@@ -282,7 +290,7 @@ void main() {
       ]);
       await expectLater(
         api(transport).update(
-          'invoice',
+          'kumwe.accounting.invoice',
           'record-0001',
           KumweMutationIntent(
             body: KumweJsonValue.from({'values': <String, Object?>{}}),
@@ -307,7 +315,7 @@ void main() {
         ),
       ]);
       final outcome = await api(transport).update(
-        'invoice',
+        'kumwe.accounting.invoice',
         'record-0001',
         KumweMutationIntent(
           body: KumweJsonValue.from({'values': <String, Object?>{}}),
@@ -322,10 +330,69 @@ void main() {
     });
 
     test(
+      'a server error is ambiguous with its problem, never refused',
+      () async {
+        final transport = FakeKumweTransport([
+          KumweResponse(
+            statusCode: 503,
+            headers: HeaderMap({
+              'Content-Type': 'application/problem+json',
+              'Retry-After': '1',
+            }),
+            body: utf8.encode(
+              jsonEncode({
+                'type': 'urn:kumwe:problem:business-record-unavailable',
+                'status': 503,
+              }),
+            ),
+          ),
+        ]);
+        final outcome = await api(transport).update(
+          'kumwe.accounting.invoice',
+          'record-0001',
+          KumweMutationIntent(
+            body: KumweJsonValue.from({'values': <String, Object?>{}}),
+            ifMatch: EntityTag.recordVersion(5),
+          ),
+        );
+        expect(outcome.disposition, KumweMutationDisposition.ambiguous);
+        expect(outcome.isCommitted, isFalse);
+        expect(
+          outcome.result?.problemOrNull?.code,
+          'business-record-unavailable',
+          reason: 'the ambiguity keeps the declared retry guidance',
+        );
+      },
+    );
+
+    test('a gateway error page is ambiguous, never a refusal', () async {
+      final transport = FakeKumweTransport([
+        KumweResponse(
+          statusCode: 504,
+          headers: HeaderMap({'Content-Type': 'text/html'}),
+          body: utf8.encode('<html>Gateway Timeout</html>'),
+        ),
+      ]);
+      final outcome = await api(transport).update(
+        'kumwe.accounting.invoice',
+        'record-0001',
+        KumweMutationIntent(
+          body: KumweJsonValue.from({'values': <String, Object?>{}}),
+          ifMatch: EntityTag.recordVersion(5),
+        ),
+      );
+      expect(
+        outcome.disposition,
+        KumweMutationDisposition.ambiguous,
+        reason: 'an intermediary may have answered after the commit',
+      );
+    });
+
+    test(
       'a transport failure mid-mutation is ambiguous, never refused',
       () async {
         final outcome = await api(const ThrowingTransport()).update(
-          'invoice',
+          'kumwe.accounting.invoice',
           'record-0001',
           KumweMutationIntent(
             body: KumweJsonValue.from({'values': <String, Object?>{}}),
@@ -361,11 +428,13 @@ void main() {
       final transport = FakeKumweTransport([
         jsonResponse(200, {'data': definition}),
       ]);
-      final result = await api(transport).definition('invoice');
-      expect(result.valueOrNull?.handle, 'invoice');
+      final result = await api(
+        transport,
+      ).definition('kumwe.accounting.invoice');
+      expect(result.valueOrNull?.handle, 'kumwe.accounting.invoice');
       expect(
         transport.requests.single.uri.path,
-        '/api/v1/business/definitions/invoice',
+        '/api/v1/business/definitions/kumwe.accounting.invoice',
       );
     });
 
@@ -382,7 +451,7 @@ void main() {
           ),
         ),
       ]);
-      final result = await api(transport).definition('secretive');
+      final result = await api(transport).definition('site.default.secretive');
       expect(result.isSuccess, isFalse);
       expect(result.problemOrNull?.code, 'business-record-not-found');
     });
@@ -424,7 +493,7 @@ void main() {
         }),
       ]);
       final result = await api(transport).customView(
-        'invoice',
+        'kumwe.accounting.invoice',
         'aging',
         parameters: KumweJsonValue.from({'as_at': '2026-08-25'}),
       );
@@ -442,7 +511,7 @@ void main() {
           jsonResponse(200, {'items': 'not-a-list'}),
         ]);
         await expectLater(
-          api(transport).search('invoice', KumweRecordQuery()),
+          api(transport).search('kumwe.accounting.invoice', KumweRecordQuery()),
           throwsA(isA<KumweProtocolException>()),
         );
       },
@@ -458,7 +527,7 @@ void main() {
         }),
       ]);
       final outcome = await api(transport).requestApproval(
-        'invoice',
+        'kumwe.accounting.invoice',
         'record-0001',
         'write_off',
         KumweMutationIntent(
@@ -472,7 +541,7 @@ void main() {
       expect(outcome.result?.valueOrNull?.approvalRequestId, 'approval-0001');
       expect(
         transport.requests.single.uri.path,
-        '/api/v1/business/records/invoice/record-0001/actions/write_off'
+        '/api/v1/business/records/kumwe.accounting.invoice/record-0001/actions/write_off'
         '/approval',
       );
     });

@@ -89,9 +89,11 @@ Target gate: **G3 — Dynamic runtime alpha**
 - Immutable manifest models with typed unsupported-vocabulary results are implemented against the *proposed*
   grammar (`ClientSurfaceInterpreter`); re-point them at the adopted grammar once core adopts a descendant. Host
   screen models remain client-owned.
-- Cache by server-provided generation/checksum and invalidate on authority changes. Done for the in-memory
-  runtime layer: `KumweAuthorityPartition` digests origin, site, credential, organization, workspace and every
-  authority generation, and `KumweRuntimeCache` drops a caller's whole view when any of them moves.
+- Cache by server-provided generation/checksum and invalidate on authority changes. The in-memory primitive
+  exists — `KumweAuthorityPartition` digests origin, site, credential, organization, workspace and every
+  token authority generation, and `KumweRuntimeCache` drops a caller's whole view when any of them moves or
+  the credential rotates — but it is not yet wired into the transports, and binding the server's business
+  generation and per-definition checksums into the partition remains open work of this milestone.
 - Prove activate/disable/upgrade lifecycle removal without loading executable extension code.
 
 Exit evidence: extension lifecycle fixtures, schema-fuzz tests, locale/accessibility model fixtures and no-code static

@@ -118,6 +118,48 @@ void main() {
       expect(cache.read(live, 'third'), 3);
     });
 
+    test('retiring a rotated credential scope drops its whole view', () {
+      final cache = KumweRuntimeCache<String>();
+      final oldCredential = partition();
+      final newCredential = partition(
+        who: KumweCredentialReference('credential-0002'),
+      );
+      cache.adopt(oldCredential);
+      cache.write(oldCredential, 'catalog', 'old-credential-catalog');
+      // Rotation: retire the superseded scope, adopt the replacement.
+      cache.retire(oldCredential.scope);
+      cache.adopt(newCredential);
+      expect(cache.read(oldCredential, 'catalog'), isNull);
+      expect(
+        cache.length,
+        0,
+        reason: 'nothing of the rotated credential survives',
+      );
+    });
+
+    test('forgotten scopes are retired instead of accumulating', () {
+      final cache = KumweRuntimeCache<int>();
+      // Adopt 65 distinct credential scopes; the first must be retired.
+      final first = partition(
+        who: KumweCredentialReference('credential-scope-000'),
+      );
+      cache.adopt(first);
+      cache.write(first, 'entry', 0);
+      for (var index = 1; index <= 64; index++) {
+        final scope = partition(
+          who: KumweCredentialReference(
+            'credential-scope-${index.toString().padLeft(3, '0')}',
+          ),
+        );
+        cache.adopt(scope);
+      }
+      expect(
+        cache.read(first, 'entry'),
+        isNull,
+        reason: 'the least recently adopted scope was retired whole',
+      );
+    });
+
     test('clear releases everything', () {
       final cache = KumweRuntimeCache<String>();
       final live = partition();

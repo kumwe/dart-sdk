@@ -122,24 +122,48 @@ final class KumweRuntimeCache<V> {
   final int _maxEntries;
   final LinkedHashMap<String, _CacheEntry<V>> _entries =
       LinkedHashMap<String, _CacheEntry<V>>();
-  final Map<String, String> _livePartitions = {};
+  final LinkedHashMap<String, String> _livePartitions =
+      LinkedHashMap<String, String>();
+
+  /// Most scopes held live at once; beyond it the least recently adopted
+  /// scope is retired whole, so forgotten credentials cannot accumulate.
+  static const int _maxScopes = 64;
 
   /// Declares [partition] live for its scope, dropping every entry the
   /// scope cached under a different partition digest.
   ///
-  /// Call this whenever a session adopts a token: an unchanged digest is a
-  /// no-op, a changed digest is a full invalidation of that caller's view.
+  /// Call this whenever a session adopts a token: an unchanged digest
+  /// only refreshes the scope's recency, a changed digest is a full
+  /// invalidation of that caller's view. When the *credential itself*
+  /// rotated, also [retire] the superseded partition's scope — rotation
+  /// changes the scope, so adopt alone cannot see the old entries.
   void adopt(KumweAuthorityPartition partition) {
-    final current = _livePartitions[partition.scope];
-    if (current == partition.digest) {
-      return;
-    }
+    final current = _livePartitions.remove(partition.scope);
     _livePartitions[partition.scope] = partition.digest;
-    _entries.removeWhere(
-      (_, entry) =>
-          entry.partition.scope == partition.scope &&
-          entry.partition.digest != partition.digest,
-    );
+    if (current != null && current != partition.digest) {
+      _entries.removeWhere(
+        (_, entry) =>
+            entry.partition.scope == partition.scope &&
+            entry.partition.digest != partition.digest,
+      );
+    }
+    while (_livePartitions.length > _maxScopes) {
+      final oldest = _livePartitions.keys.first;
+      retire(oldest);
+    }
+  }
+
+  /// Retires a whole scope: its live-partition record and every entry it
+  /// cached, under any digest.
+  ///
+  /// Credential *rotation* mints a new credential reference and with it a
+  /// new scope, so [adopt] alone would leave the superseded credential's
+  /// entries and live record behind forever. Whoever rotates a credential
+  /// retires the old partition's [KumweAuthorityPartition.scope] when
+  /// adopting the new one.
+  void retire(String scope) {
+    _livePartitions.remove(scope);
+    _entries.removeWhere((_, entry) => entry.partition.scope == scope);
   }
 
   /// Reads the cached value, or `null` when nothing usable is cached.

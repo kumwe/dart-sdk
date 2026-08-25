@@ -196,6 +196,26 @@ void main() {
   });
 
   group('search, projection and aggregates', () {
+    test('lengths are counted in code points, the way core counts', () {
+      final emoji = '\u{1F680}' * 400;
+      // 400 code points but 800 UTF-16 units: core accepts it.
+      KumweTextFilter('notes', KumweTextOperator.contains, emoji);
+      KumweRecordSearch('\u{1F680}' * 256, ['notes']);
+      expect(
+        () => KumweTextFilter(
+          'notes',
+          KumweTextOperator.contains,
+          '\u{1F680}' * 513,
+        ),
+        throwsArgumentError,
+      );
+      expect(
+        () => KumweRecordSearch('   ', ['notes']),
+        throwsArgumentError,
+        reason: 'core refuses whitespace-only terms',
+      );
+    });
+
     test('search bounds hold', () {
       expect(() => KumweRecordSearch('', ['number']), throwsArgumentError);
       expect(

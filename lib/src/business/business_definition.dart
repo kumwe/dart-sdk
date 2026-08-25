@@ -750,7 +750,7 @@ final class KumweBusinessRelationship {
       throw FormatException('Relationship $handle needs a bounded label.');
     }
     final target = json['target'];
-    if (target is! String || !KumweBusinessHandles.isHandle(target)) {
+    if (target is! String || !KumweBusinessHandles.isDefinitionHandle(target)) {
       throw FormatException(
         'Relationship $handle targets an out-of-grammar definition.',
       );
@@ -818,12 +818,9 @@ final class KumweBusinessDefinition {
       throw const FormatException('Definitions carry a UUID identifier.');
     }
     final handle = json['handle'];
-    if (handle is! String ||
-        handle.isEmpty ||
-        handle.length > 191 ||
-        !KumweBusinessHandles.isHandle(handle)) {
+    if (handle is! String || !KumweBusinessHandles.isDefinitionHandle(handle)) {
       throw const FormatException(
-        'Definitions carry a bounded lowercase handle.',
+        'Definitions carry a bounded namespaced handle.',
       );
     }
     final version = json['version'];
@@ -1076,13 +1073,31 @@ final class KumweBusinessCatalog {
 final class KumweBusinessHandles {
   const KumweBusinessHandles._();
 
-  /// Whether [value] is a bounded lowercase business handle.
+  /// Whether [value] is a bounded lowercase member handle — the short
+  /// grammar core applies to field, view, action, relationship, alias and
+  /// workflow-state handles.
   static bool isHandle(String value) => _handlePattern.hasMatch(value);
 
+  /// Whether [value] is a namespaced definition handle.
+  ///
+  /// Core forces every definition handle under an owner namespace —
+  /// `core.`, `site.<id>.` or `<vendor>.<package>.` — so a real handle
+  /// always contains at least one `.`, `_` or `-` separator and runs to
+  /// 191 characters; relationship targets use the same grammar.
+  static bool isDefinitionHandle(String value) =>
+      value.length <= 191 && _namespacedPattern.hasMatch(value);
+
   /// Whether [value] is a declared core or namespaced extension field type.
+  ///
+  /// Extension types sit under the owner namespace of their publishing
+  /// package, where hyphens are legal (`acme.crm-pro.rating`); an
+  /// undeclared `core.*` spelling is refused rather than admitted as an
+  /// extension.
   static bool isFieldType(String value) =>
       coreFieldTypes.contains(value) ||
-      (_extensionTypePattern.hasMatch(value) && !value.startsWith('core.'));
+      (value.length <= 191 &&
+          _namespacedPattern.hasMatch(value) &&
+          !value.startsWith('core.'));
 
   /// Parses a bounded list of handles.
   static List<String> handleList(Object? raw, String context) {
@@ -1133,7 +1148,7 @@ final class KumweBusinessHandles {
 
   static final RegExp _handlePattern = RegExp(r'^[a-z][a-z0-9_]{0,62}$');
 
-  static final RegExp _extensionTypePattern = RegExp(
-    r'^[a-z][a-z0-9_]{0,62}(?:\.[a-z][a-z0-9_]{0,62}){1,3}$',
+  static final RegExp _namespacedPattern = RegExp(
+    r'^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$',
   );
 }

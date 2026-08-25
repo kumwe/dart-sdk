@@ -86,10 +86,11 @@ enum KumweMutationDisposition {
   /// The attempt failed with an expected API problem.
   refused,
 
-  /// The transport failed after the request may have reached the server;
-  /// the mutation may or may not have committed. The intent and key are
-  /// retained, and only an identical retry or an operation-status read may
-  /// settle the question — never a fresh key.
+  /// The transport failed after the request may have reached the server,
+  /// or the server answered with an error that leaves the commit state
+  /// unknown; the mutation may or may not have committed. The intent and
+  /// key are retained, and only an identical retry or an operation-status
+  /// read may settle the question — never a fresh key.
   ambiguous,
 }
 
@@ -132,6 +133,27 @@ final class KumweMutationOutcome<T> {
     : disposition = KumweMutationDisposition.ambiguous,
       result = null;
 
+  /// Marks an attempt a server error left in an unknown commit state,
+  /// keeping the server's problem report beside the ambiguity.
+  ///
+  /// A 5xx answer is not evidence of refusal: an intermediary or a core
+  /// that failed mid-request may have answered after the mutation
+  /// committed, so the intent stays alive for an identical retry while
+  /// the problem still carries the declared retry guidance.
+  factory KumweMutationOutcome.ambiguousServerError(KumweResult<T> result) {
+    if (result is! KumweProblemResult<T>) {
+      throw ArgumentError.value(
+        result,
+        'result',
+        'An ambiguous server error wraps a problem result.',
+      );
+    }
+    return KumweMutationOutcome._(
+      disposition: KumweMutationDisposition.ambiguous,
+      result: result,
+    );
+  }
+
   const KumweMutationOutcome._({
     required this.disposition,
     required this.result,
@@ -140,7 +162,9 @@ final class KumweMutationOutcome<T> {
   /// How the attempt terminated.
   final KumweMutationDisposition disposition;
 
-  /// The operation result; `null` only for an ambiguous attempt.
+  /// The operation result; `null` only for an ambiguous attempt whose
+  /// transport failed outright. An ambiguous attempt answered with a
+  /// server error keeps that problem here.
   final KumweResult<T>? result;
 
   /// Whether the mutation is known to have taken effect, now or earlier.

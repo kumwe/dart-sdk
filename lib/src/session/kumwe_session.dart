@@ -107,7 +107,15 @@ final class KumweSession implements BearerTokenProvider {
   /// session no longer trusts.
   @override
   Future<BearerToken?> token() async {
-    final access = await _usableAccessToken();
+    final KumweAccessToken? access;
+    try {
+      access = await _usableAccessToken();
+    } on KumweAuthenticationException {
+      if (_state == KumweSessionState.signedOut) {
+        return null;
+      }
+      rethrow;
+    }
     return access?.token;
   }
 
@@ -129,27 +137,41 @@ final class KumweSession implements BearerTokenProvider {
     );
   }
 
-  /// Reports that the server rejected the held credential with an
-  /// authentication failure (401), returning the replacement token to
-  /// retry with — or `null` when the one permitted silent refresh is
-  /// exhausted and only interactive re-authentication may follow.
+  /// Reports that the server rejected [rejected] with an authentication
+  /// failure (401), returning the replacement token to retry with — or
+  /// `null` when the one permitted silent refresh is exhausted and only
+  /// interactive re-authentication may follow.
+  ///
+  /// The rejected credential must be named so a *late* 401 — a response
+  /// still traveling under a superseded credential while the session
+  /// already recovered — can never invalidate the fresh credential: a
+  /// rejection of anything but the held credential is answered with the
+  /// currently usable token and touches nothing.
   ///
   /// The caller retries the original request at most once with the
   /// replacement. A rejection of a credential that was itself obtained in
   /// answer to a rejection ends silent recovery: the session escalates to
   /// interactive re-authentication rather than rotating credentials in a
   /// loop against a server that keeps refusing them.
-  Future<KumweAccessToken?> handleAuthenticationFailure() async {
+  Future<KumweAccessToken?> handleAuthenticationFailure(
+    KumweCredentialReference rejected,
+  ) async {
     if (_state == KumweSessionState.signedOut) {
       return null;
     }
-    final rejected = _token;
-    if (rejected == null) {
+    final held = _token;
+    if (held == null || held.credential != rejected) {
+      // A stale rejection of a superseded credential; the session has
+      // already moved on. Hand back whatever is currently usable.
+      return _usableAccessToken();
+    }
+    await _provider.invalidate(held.credential);
+    if (_state == KumweSessionState.signedOut) {
+      // Signed out while the invalidation was in flight; stay closed.
       return null;
     }
-    await _provider.invalidate(rejected.credential);
     _token = null;
-    if (rejected.credential == _bornFromRejection) {
+    if (held.credential == _bornFromRejection) {
       // The replacement credential was rejected too: stop refreshing.
       _state = KumweSessionState.reauthenticationRequired;
       return null;
@@ -158,12 +180,14 @@ final class KumweSession implements BearerTokenProvider {
     try {
       final replacement = await _acquire(
         KumweTokenRequestReason.refresh,
-        previous: rejected.credential,
+        previous: held.credential,
       );
       _bornFromRejection = replacement.credential;
       return replacement;
     } on Object {
-      _state = KumweSessionState.reauthenticationRequired;
+      if (_state != KumweSessionState.signedOut) {
+        _state = KumweSessionState.reauthenticationRequired;
+      }
       rethrow;
     }
   }
@@ -210,7 +234,15 @@ final class KumweSession implements BearerTokenProvider {
       return running;
     }
     final flight = _request(reason, previous: previous)
-        .then((token) {
+        .then((token) async {
+          if (_state == KumweSessionState.signedOut) {
+            // The session closed while the provider was working; the
+            // fresh credential must die unused rather than leak out live.
+            await _provider.invalidate(token.credential);
+            throw const KumweAuthenticationException(
+              'The session was signed out during token acquisition.',
+            );
+          }
           _adopt(token);
           return token;
         })
