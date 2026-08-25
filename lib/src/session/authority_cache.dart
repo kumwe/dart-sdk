@@ -16,10 +16,16 @@ import '../json/kumwe_json.dart';
 /// authority change.
 final class KumweAuthorityPartition {
   /// Derives a partition from its authority inputs.
+  ///
+  /// Organization and workspace are part of the scope: one credential
+  /// browsing two organizations holds two partitions, so their disclosed
+  /// views can never collide in the cache.
   factory KumweAuthorityPartition({
     required Uri origin,
     required String site,
     required KumweCredentialReference credential,
+    String? organization,
+    String? workspace,
     Map<String, String> generations = const {},
   }) {
     if (generations.length > 16) {
@@ -29,22 +35,41 @@ final class KumweAuthorityPartition {
         'Authority generations are a bounded map.',
       );
     }
+    if (workspace != null && organization == null) {
+      throw ArgumentError.value(
+        workspace,
+        'workspace',
+        'A workspace is scoped inside an organization.',
+      );
+    }
     final normalizedOrigin = KumweContextIdentifiers.normalizeOrigin(
       origin,
       'origin',
     );
     final normalizedSite = KumweContextIdentifiers.normalizeSite(site);
+    final normalizedOrganization = organization == null
+        ? null
+        : KumweContextIdentifiers.normalizeSelection(
+            organization,
+            'organization',
+          );
+    final normalizedWorkspace = workspace == null
+        ? null
+        : KumweContextIdentifiers.normalizeSelection(workspace, 'workspace');
     final digest = KumweCanonicalJson.sha256Hex(
       KumweJsonValue.from({
         'origin': normalizedOrigin.toString(),
         'site': normalizedSite,
         'credential': credential.value,
+        'organization': normalizedOrganization,
+        'workspace': normalizedWorkspace,
         'generations': generations,
       }),
     );
     return KumweAuthorityPartition._(
       scope:
           '${normalizedOrigin.toString()}|$normalizedSite'
+          '|${normalizedOrganization ?? '-'}|${normalizedWorkspace ?? '-'}'
           '|${credential.value}',
       digest: digest,
     );
