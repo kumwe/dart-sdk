@@ -1,0 +1,216 @@
+{
+  "id": "0f8fad5b-d9cb-469f-a165-70867728950e",
+  "handle": "invoice",
+  "singular_label": "Invoice",
+  "plural_label": "Invoices",
+  "version": 4,
+  "checksum": "9b74c9897bac770ffc029102a200c5de1bc9ff5b1e871f2ab1bd928101eaf3e4",
+  "owner": {"type": "extension", "identifier": "kumwe.accounting"},
+  "scope": "site_organization",
+  "soft_delete": true,
+  "workflow": {
+    "initial_state": "draft",
+    "states": [
+      {"handle": "draft", "label": "Draft"},
+      {"handle": "issued", "label": "Issued"},
+      {"handle": "paid", "label": "Paid"},
+      {"handle": "written_off", "label": "Written off"}
+    ]
+  },
+  "operation": "read",
+  "fields": [
+    {
+      "handle": "number",
+      "label": "Number",
+      "description": "Sequential invoice number.",
+      "help_text": null,
+      "type": "core.sequence",
+      "value_type": "string",
+      "required": true,
+      "nullable": false,
+      "read_only": true,
+      "write_only": false,
+      "immutable_after_create": true,
+      "conditional": false,
+      "form_group": "identity",
+      "order": 1,
+      "placements": ["header"],
+      "uses": {
+        "create": false,
+        "update": false,
+        "detail": true,
+        "list": true,
+        "filter": true,
+        "search": true,
+        "sort": true,
+        "report": true,
+        "export": true
+      },
+      "schema": {"type": "string", "readOnly": true}
+    },
+    {
+      "handle": "total",
+      "label": "Total",
+      "description": "Grand total in document currency.",
+      "help_text": "Computed from lines.",
+      "type": "core.money",
+      "value_type": "object",
+      "required": true,
+      "nullable": false,
+      "read_only": true,
+      "write_only": false,
+      "immutable_after_create": false,
+      "conditional": false,
+      "form_group": "totals",
+      "order": 9,
+      "placements": ["totals"],
+      "uses": {
+        "create": false,
+        "update": false,
+        "detail": true,
+        "list": true,
+        "filter": true,
+        "search": false,
+        "sort": true,
+        "report": true,
+        "export": true
+      },
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["amount", "currency"],
+        "properties": {
+          "amount": {"type": "string", "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$"},
+          "currency": {"type": "string", "maxLength": 32}
+        }
+      }
+    },
+    {
+      "handle": "issued_on",
+      "label": "Issued on",
+      "description": null,
+      "help_text": null,
+      "type": "core.date",
+      "value_type": "string",
+      "required": false,
+      "nullable": true,
+      "read_only": false,
+      "write_only": false,
+      "immutable_after_create": false,
+      "conditional": false,
+      "form_group": "dates",
+      "order": 3,
+      "placements": [],
+      "uses": {
+        "create": true,
+        "update": true,
+        "detail": true,
+        "list": true,
+        "filter": true,
+        "search": false,
+        "sort": true,
+        "report": true,
+        "export": true
+      },
+      "schema": {"type": ["string", "null"], "format": "date"}
+    },
+    {
+      "handle": "notes",
+      "label": "Notes",
+      "description": null,
+      "help_text": null,
+      "type": "acct.legal_note",
+      "value_type": "string",
+      "required": false,
+      "nullable": true,
+      "read_only": false,
+      "write_only": false,
+      "immutable_after_create": false,
+      "conditional": true,
+      "form_group": "notes",
+      "order": 12,
+      "placements": [],
+      "uses": {
+        "create": true,
+        "update": true,
+        "detail": true,
+        "list": false,
+        "filter": false,
+        "search": true,
+        "sort": false,
+        "report": false,
+        "export": true
+      },
+      "schema": {"type": ["string", "null"], "maxLength": 2000}
+    }
+  ],
+  "views": [
+    {
+      "handle": "default_list",
+      "label": "Invoices",
+      "kind": "list",
+      "custom": false,
+      "fields": ["number", "total", "issued_on"],
+      "filters": ["issued_on", "total"],
+      "sorts": ["number", "issued_on"]
+    },
+    {
+      "handle": "aging",
+      "label": "Aging report",
+      "kind": "list",
+      "custom": true,
+      "fields": ["number", "total"],
+      "filters": [],
+      "sorts": [],
+      "custom_contract": {
+        "query_schema": {"type": "object", "additionalProperties": false},
+        "result_schema": {"type": "object", "additionalProperties": false}
+      }
+    }
+  ],
+  "actions": [
+    {
+      "handle": "issue",
+      "label": "Issue",
+      "bulk": false,
+      "high_impact": false,
+      "transition": "issued",
+      "conditional": true
+    },
+    {
+      "handle": "write_off",
+      "label": "Write off",
+      "bulk": false,
+      "high_impact": true,
+      "transition": "written_off",
+      "conditional": true,
+      "custom_contract": {
+        "command_schema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reason"],
+          "properties": {"reason": {"type": "string", "maxLength": 500}}
+        },
+        "result_schema": {"type": "object", "additionalProperties": false}
+      }
+    }
+  ],
+  "relationships": [
+    {
+      "handle": "lines",
+      "label": "Lines",
+      "kind": "owned_line_collection",
+      "target": "invoice_line",
+      "required": true,
+      "ordered": true
+    },
+    {
+      "handle": "customer",
+      "label": "Customer",
+      "kind": "many_to_one",
+      "target": "customer",
+      "required": true,
+      "ordered": false
+    }
+  ]
+}

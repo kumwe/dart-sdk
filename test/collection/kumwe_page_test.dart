@@ -12,7 +12,8 @@ void main() {
 
     test('refuses empty, oversized, spaced and non-ASCII values', () {
       expect(() => KumweCursor(''), throwsArgumentError);
-      expect(() => KumweCursor('a' * 4097), throwsArgumentError);
+      expect(() => KumweCursor('a' * 65537), throwsArgumentError);
+      expect(KumweCursor('a' * 65536).value, hasLength(65536));
       expect(() => KumweCursor('has space'), throwsArgumentError);
       expect(() => KumweCursor('tab\there'), throwsArgumentError);
       expect(() => KumweCursor('unicodé'), throwsArgumentError);
