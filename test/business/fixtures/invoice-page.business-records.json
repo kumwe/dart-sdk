@@ -1,0 +1,64 @@
+{
+  "items": [
+    {
+      "definition_version": 4,
+      "record_id": "b1a87b7e-3c0a-4f7d-9e2b-000000000001",
+      "version": 5,
+      "workflow_state": "issued",
+      "values": {
+        "number": "INV-2026-00042",
+        "total": {"amount": "1234567890.123400", "currency": "EUR"},
+        "issued_on": "2026-08-09",
+        "notes": null
+      },
+      "created_at": "2026-08-09T08:00:00+00:00",
+      "updated_at": "2026-08-10T09:30:00+00:00",
+      "archived_at": null,
+      "deleted_at": null,
+      "includes": {
+        "lines": [
+          {
+            "definition_version": 2,
+            "record_id": "b1a87b7e-3c0a-4f7d-9e2b-00000000000a",
+            "version": 1,
+            "position": 1,
+            "values": {
+              "description": "Consulting",
+              "line_total": {"amount": "1000.00", "currency": "EUR"}
+            }
+          },
+          {
+            "definition_version": 2,
+            "record_id": "b1a87b7e-3c0a-4f7d-9e2b-00000000000b",
+            "version": 3,
+            "position": 2,
+            "values": {
+              "description": "Hosting",
+              "line_total": {"amount": "234.50", "currency": "EUR"}
+            }
+          }
+        ]
+      }
+    },
+    {
+      "definition_version": 4,
+      "record_id": "b1a87b7e-3c0a-4f7d-9e2b-000000000002",
+      "version": 1,
+      "workflow_state": "draft",
+      "values": {
+        "number": "INV-2026-00043",
+        "total": {"amount": "0", "currency": "EUR"}
+      },
+      "created_at": "2026-08-11T10:00:00+00:00",
+      "updated_at": "2026-08-11T10:00:00+00:00",
+      "archived_at": null,
+      "deleted_at": null,
+      "includes": {}
+    }
+  ],
+  "next_cursor": "ZXhhbXBsZS1wYXlsb2FkLXNlZ21lbnQ.ZXhhbXBsZS1zaWduYXR1cmU-01",
+  "aggregates": {
+    "invoice_count": 2,
+    "total_sum": "1234567890.123400"
+  }
+}

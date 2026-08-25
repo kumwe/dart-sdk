@@ -1,0 +1,10 @@
+{
+  "definition_version": 4,
+  "record_id": "b1a87b7e-3c0a-4f7d-9e2b-000000000001",
+  "version": 6,
+  "workflow_state": "written_off",
+  "operation": "action",
+  "deleted": false,
+  "replayed": true,
+  "result": {"written_off_total": {"amount": "1234.50", "currency": "EUR"}}
+}

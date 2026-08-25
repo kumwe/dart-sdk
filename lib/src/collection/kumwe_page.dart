@@ -9,12 +9,12 @@ final class KumweCursor {
   /// Validates an opaque cursor value.
   factory KumweCursor(String value) {
     if (value.isEmpty ||
-        value.length > 4096 ||
+        value.length > 65536 ||
         value.codeUnits.any((unit) => unit <= 0x20 || unit > 0x7e)) {
       throw ArgumentError.value(
         '<cursor>',
         'value',
-        'Cursors need 1 to 4096 visible ASCII characters.',
+        'Cursors need 1 to 65536 visible ASCII characters.',
       );
     }
     return KumweCursor._(value);
