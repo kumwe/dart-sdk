@@ -38,7 +38,10 @@ The current pure-Dart package exports an executable protocol and runtime foundat
 - `KumweSession`, owning the token lifecycle discipline (one silent refresh per rejection, single-flight
   rotation, binding checks, proactive expiry) behind the application-owned authorization provider;
 - `KumweAuthorityPartition` and `KumweRuntimeCache`, dropping a caller's whole cached view when any
-  authority generation, organization, workspace, site, credential or origin changes; and
+  authority generation, organization, workspace, site, credential or origin changes;
+- `KumweCollectionPagination`, the executable reader for the collection-pagination proposal, and
+  `KumweBusinessValueValidator`, refusing provably impossible writes against the disclosed definition
+  before a request and an idempotency key are spent; and
 - OpenAPI/JSON Schema proposal validators and repository tooling.
 
 `KumweClient` currently accepts `KumweClientOptions`, an injected `KumweTransport`, and optional contract-cache
