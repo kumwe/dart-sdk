@@ -67,6 +67,13 @@ core behavior; native authorization documents are read by proposal-scoped execut
   collision, hostile deeply nested and oversized documents, Unicode-confusable identifiers, decimal
   exponent/overflow spellings, changed-body key reuse, ambiguous-timeout settlement through the operation
   ledger, stale-precondition terminal refusal and sentinel-secret diagnostics sweeps.
+- Add `KumweCollectionPagination`, an executable reader for the collection-pagination proposal: envelope
+  member names, the pinned never-invented-totals rule, consistent page-size limits and the six declared
+  collections with their observed and proposed behaviors, so page-size decisions come from declared data.
+- Add `KumweBusinessValueValidator`: pre-send validation of a create/update `values` document against the
+  disclosed definition — undisclosed fields, read-only and frozen writes, missing required writable fields,
+  disallowed nulls and values outside the declared schema fragments are refused before a request and an
+  idempotency key are spent. The server stays the authority; this only stops provably impossible writes.
 - Documentation: `client-api.md` now separates what is implemented from the adoption-gated target shape
   using the real type names; `status.md` and `roadmap.md` record the runtime wave against their gates.
 
