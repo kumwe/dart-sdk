@@ -22,6 +22,10 @@ enum KumweRetryClass {
   /// fresh entity tag or version.
   afterPreconditionRefresh,
 
+  /// The site or selected context binding is stale: re-run context
+  /// discovery and reopen the session before one retry.
+  afterContextRefresh,
+
   /// The classification cannot be proven from generic HTTP semantics.
   unspecified,
 }
@@ -37,8 +41,16 @@ final class KumweRetryClassifier {
   const KumweRetryClassifier();
 
   /// Classifies [response] from its status code alone.
-  KumweRetryClass classify(KumweResponse response) {
-    return switch (response.statusCode) {
+  KumweRetryClass classify(KumweResponse response) =>
+      classifyStatus(response.statusCode);
+
+  /// Classifies a bare HTTP [statusCode].
+  ///
+  /// [KumweRetryClass.afterContextRefresh] is never produced here: generic
+  /// HTTP semantics cannot separate a stale context binding from an expired
+  /// credential, so only a stable registry code may select it.
+  KumweRetryClass classifyStatus(int statusCode) {
+    return switch (statusCode) {
       401 => KumweRetryClass.afterReauthentication,
       408 || 425 || 429 || 502 || 503 || 504 => KumweRetryClass.afterDelay,
       412 || 428 => KumweRetryClass.afterPreconditionRefresh,
