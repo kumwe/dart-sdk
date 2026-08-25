@@ -295,7 +295,7 @@ void main() {
           registry: registry(),
         );
         final outcome = await api.update(
-          'invoice',
+          'kumwe.accounting.invoice',
           'record-0001',
           KumweMutationIntent(
             body: KumweJsonValue.from({'values': <String, Object?>{}}),

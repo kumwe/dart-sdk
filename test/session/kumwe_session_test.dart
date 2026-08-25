@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:kumwe_sdk/kumwe_sdk.dart';
 import 'package:test/test.dart';
 
@@ -7,6 +9,7 @@ final class ScriptedProvider implements KumweAuthorizationProvider {
   final List<KumweAccessToken Function(KumweTokenRequest)> _tokens;
   final List<KumweTokenRequest> requests = [];
   final List<KumweCredentialReference> invalidated = [];
+  Completer<void>? invalidateGate;
   int pendingCalls = 0;
 
   @override
@@ -19,6 +22,29 @@ final class ScriptedProvider implements KumweAuthorizationProvider {
       throw StateError('No scripted token remains.');
     }
     return _tokens.removeAt(0)(request);
+  }
+
+  @override
+  Future<void> invalidate(KumweCredentialReference credential) async {
+    final gate = invalidateGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    invalidated.add(credential);
+  }
+}
+
+final class GatedProvider implements KumweAuthorizationProvider {
+  GatedProvider(this.gate, this.token);
+
+  final Completer<void> gate;
+  final KumweAccessToken token;
+  final List<KumweCredentialReference> invalidated = [];
+
+  @override
+  Future<KumweAccessToken> tokenFor(KumweTokenRequest request) async {
+    await gate.future;
+    return token;
   }
 
   @override
@@ -131,7 +157,9 @@ void main() {
       ]);
       final subject = session(provider);
       await subject.token();
-      final replacement = await subject.handleAuthenticationFailure();
+      final replacement = await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0001'),
+      );
       expect(replacement?.credential.value, 'credential-0002');
       expect(provider.invalidated.single.value, 'credential-0001');
       expect(subject.state, KumweSessionState.active);
@@ -144,9 +172,13 @@ void main() {
       ]);
       final subject = session(provider);
       await subject.token();
-      await subject.handleAuthenticationFailure();
+      await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0001'),
+      );
       // The refreshed credential is rejected too.
-      final second = await subject.handleAuthenticationFailure();
+      final second = await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0002'),
+      );
       expect(second, isNull);
       expect(subject.state, KumweSessionState.reauthenticationRequired);
       expect(provider.invalidated.map((credential) => credential.value), [
@@ -170,8 +202,12 @@ void main() {
       ]);
       final subject = session(provider);
       await subject.token();
-      await subject.handleAuthenticationFailure();
-      await subject.handleAuthenticationFailure();
+      await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0001'),
+      );
+      await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0002'),
+      );
       expect(subject.state, KumweSessionState.reauthenticationRequired);
       final restored = await subject.reauthenticate();
       expect(restored.credential.value, 'credential-0003');
@@ -183,12 +219,36 @@ void main() {
       expect((await subject.token())?.value, endsWith('0003'));
     });
 
+    test('a late 401 for a superseded credential touches nothing', () async {
+      final provider = ScriptedProvider([
+        (_) => issued('0001'),
+        (_) => issued('0002'),
+      ]);
+      final subject = session(provider);
+      await subject.token();
+      await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0001'),
+      );
+      // A response that traveled under the superseded credential lands
+      // late; the fresh credential must survive it untouched.
+      final answered = await subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0001'),
+      );
+      expect(answered?.credential.value, 'credential-0002');
+      expect(subject.state, KumweSessionState.active);
+      expect(provider.invalidated.map((credential) => credential.value), [
+        'credential-0001',
+      ], reason: 'the fresh credential was never invalidated');
+    });
+
     test('a failing silent refresh escalates and surfaces the error', () async {
       final provider = ScriptedProvider([(_) => issued('0001')]);
       final subject = session(provider);
       await subject.token();
       await expectLater(
-        subject.handleAuthenticationFailure(),
+        subject.handleAuthenticationFailure(
+          KumweCredentialReference('credential-0001'),
+        ),
         throwsStateError,
       );
       expect(subject.state, KumweSessionState.reauthenticationRequired);
@@ -210,6 +270,53 @@ void main() {
         reason: 'a signed-out session never asks for tokens',
       );
       await expectLater(subject.reauthenticate(), throwsStateError);
+    });
+  });
+
+  group('sign-out races', () {
+    test('a refresh completing after sign-out never leaks its token', () async {
+      final gate = Completer<void>();
+      final provider = GatedProvider(gate, issued('0001'));
+      final subject = KumweSession(
+        origin: origin,
+        selection: selection,
+        provider: provider,
+        clock: () => DateTime.utc(2026, 8, 25, 12),
+      );
+      final pending = subject.token();
+      await subject.signOut();
+      gate.complete();
+      expect(
+        await pending,
+        isNull,
+        reason: 'the joiner must not receive a live credential',
+      );
+      expect(subject.state, KumweSessionState.signedOut);
+      expect(subject.accessToken, isNull);
+      expect(provider.invalidated.map((credential) => credential.value), [
+        'credential-0001',
+      ], reason: 'the fresh credential dies unused');
+    });
+
+    test('a 401 handler resuming after sign-out stays signed out', () async {
+      final provider = ScriptedProvider([(_) => issued('0001')]);
+      final subject = session(provider);
+      await subject.token();
+      provider.invalidateGate = Completer<void>();
+      final pending = subject.handleAuthenticationFailure(
+        KumweCredentialReference('credential-0001'),
+      );
+      await Future<void>.delayed(Duration.zero);
+      final signingOut = subject.signOut();
+      provider.invalidateGate!.complete();
+      await signingOut;
+      expect(await pending, isNull);
+      expect(subject.state, KumweSessionState.signedOut);
+      expect(
+        provider.requests,
+        hasLength(1),
+        reason: 'no refresh is launched for a closed session',
+      );
     });
   });
 

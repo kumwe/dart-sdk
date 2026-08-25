@@ -146,7 +146,14 @@ final class KumweBusinessApi {
   /// Absent, disabled, unexposed and denied definitions are the same
   /// non-enumerating `business-record-not-found` problem by design.
   Future<KumweResult<KumweBusinessDefinition>> definition(String handle) {
-    _requireHandle(handle, 'handle');
+    if (!KumweBusinessHandles.isDefinitionHandle(handle) &&
+        !_uuidPattern.hasMatch(handle)) {
+      throw ArgumentError.value(
+        '<handle>',
+        'handle',
+        'Definitions are addressed by namespaced handle or UUID.',
+      );
+    }
     return _read(
       '/api/v1/business/definitions/${Uri.encodeComponent(handle)}',
       (json) => KumweBusinessDefinition.fromJson(json),
@@ -162,11 +169,33 @@ final class KumweBusinessApi {
     String definition,
     KumweRecordQuery query,
   ) async {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     final response = await _send(
       KumweHttpMethod.post,
       '/api/v1/business/records/${Uri.encodeComponent(definition)}/search',
       body: KumweJsonValue.from(query.toJson()),
+    );
+    return _decode(response, (json) => KumweRecordPageDocument.fromJson(json));
+  }
+
+  /// Browses [definition] through the observed GET route.
+  ///
+  /// The browse route reads the same closed grammar from the query
+  /// string, but every filter literal stays a *string* on this wire —
+  /// typed `int`/`bool` comparisons only exist on the POST [search]
+  /// route — so a query whose comparison or set values are not strings
+  /// is refused here with a pointer at [search] instead of silently
+  /// changing meaning.
+  Future<KumweResult<KumweRecordPageDocument>> browse(
+    String definition,
+    KumweRecordQuery query,
+  ) async {
+    _requireDefinition(definition);
+    _requireStringLiterals(query.filter);
+    final response = await _send(
+      KumweHttpMethod.get,
+      '/api/v1/business/records/${Uri.encodeComponent(definition)}',
+      query: _flattenQueryDocument(query.toJson()),
     );
     return _decode(response, (json) => KumweRecordPageDocument.fromJson(json));
   }
@@ -180,7 +209,7 @@ final class KumweBusinessApi {
     bool includeArchived = false,
     bool includeDeleted = false,
   }) async {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireRecordId(recordId);
     final projection = KumweRecordProjection(
       fields: fields,
@@ -209,7 +238,7 @@ final class KumweBusinessApi {
     int? limit,
     int? beforeVersion,
   }) async {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireRecordId(recordId);
     if (limit != null && (limit < 1 || limit > 200)) {
       throw ArgumentError.value(
@@ -249,7 +278,7 @@ final class KumweBusinessApi {
     String definition,
     KumweMutationIntent intent,
   ) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     if (intent.ifMatch != null) {
       throw ArgumentError.value(
         intent,
@@ -274,7 +303,7 @@ final class KumweBusinessApi {
     String recordId,
     KumweMutationIntent intent,
   ) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireRecordId(recordId);
     _requirePrecondition(intent.ifMatch);
     return _mutate(
@@ -292,7 +321,7 @@ final class KumweBusinessApi {
     required IdempotencyKey key,
     required EntityTag ifMatch,
   }) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireRecordId(recordId);
     return _emptyBodyMutation(
       KumweHttpMethod.delete,
@@ -310,7 +339,7 @@ final class KumweBusinessApi {
     required IdempotencyKey key,
     required EntityTag ifMatch,
   }) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireRecordId(recordId);
     return _emptyBodyMutation(
       KumweHttpMethod.post,
@@ -328,7 +357,7 @@ final class KumweBusinessApi {
     required IdempotencyKey key,
     required EntityTag ifMatch,
   }) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireRecordId(recordId);
     return _emptyBodyMutation(
       KumweHttpMethod.post,
@@ -350,7 +379,7 @@ final class KumweBusinessApi {
     String action,
     KumweMutationIntent intent,
   ) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(action, 'action');
     _requireRecordId(recordId);
     _requirePrecondition(intent.ifMatch);
@@ -364,13 +393,20 @@ final class KumweBusinessApi {
   }
 
   /// Asks whether [action] needs approval, storing a request when it does.
+  ///
+  /// The audited approval route replays through the application ledger
+  /// *without* a replay marker — the stored approval id comes back as a
+  /// fresh-looking response — so a replayed request here is reported as
+  /// [KumweMutationDisposition.applied]; the two are indistinguishable on
+  /// this wire, and the returned `approval_request_id` is identical
+  /// either way.
   Future<KumweMutationOutcome<KumweApprovalRequestOutcome>> requestApproval(
     String definition,
     String recordId,
     String action,
     KumweMutationIntent intent,
   ) async {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(action, 'action');
     _requireRecordId(recordId);
     _requirePrecondition(intent.ifMatch);
@@ -388,11 +424,13 @@ final class KumweBusinessApi {
       return const KumweMutationOutcome.ambiguous();
     }
     if (!response.isSuccessful) {
-      return KumweMutationOutcome.fromProblem(
-        KumweResult<KumweApprovalRequestOutcome>.problem(
-          KumweProblem.fromResponse(response, registry: _registry),
-        ),
+      final problem = KumweResult<KumweApprovalRequestOutcome>.problem(
+        KumweProblem.fromResponse(response, registry: _registry),
       );
+      if (response.statusCode >= 500) {
+        return KumweMutationOutcome.ambiguousServerError(problem);
+      }
+      return KumweMutationOutcome.fromProblem(problem);
     }
     final metadata = KumweResponseMetadata.fromResponse(response);
     return KumweMutationOutcome.fromSuccess(
@@ -410,7 +448,7 @@ final class KumweBusinessApi {
     String recordId,
     String relation,
   ) async {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(relation, 'relation');
     _requireRecordId(recordId);
     final response = await _send(
@@ -432,7 +470,7 @@ final class KumweBusinessApi {
     String relation,
     KumweMutationIntent intent,
   ) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(relation, 'relation');
     _requireRecordId(recordId);
     _requirePrecondition(intent.ifMatch);
@@ -454,7 +492,7 @@ final class KumweBusinessApi {
     required IdempotencyKey key,
     required EntityTag ifMatch,
   }) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(relation, 'relation');
     _requireRecordId(recordId);
     _requireRecordId(targetRecordId);
@@ -479,7 +517,7 @@ final class KumweBusinessApi {
     String relation,
     KumweMutationIntent intent,
   ) {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(relation, 'relation');
     _requireRecordId(recordId);
     _requirePrecondition(intent.ifMatch);
@@ -500,7 +538,7 @@ final class KumweBusinessApi {
     KumweRecordQuery? query,
     KumweJsonValue? parameters,
   }) async {
-    _requireHandle(definition, 'definition');
+    _requireDefinition(definition);
     _requireHandle(view, 'view');
     if (recordId != null) {
       _requireRecordId(recordId);
@@ -668,11 +706,15 @@ final class KumweBusinessApi {
     int? expectedStatus,
   }) {
     if (!response.isSuccessful) {
-      return KumweMutationOutcome.fromProblem(
-        KumweResult<KumweRecordMutationDocument>.problem(
-          KumweProblem.fromResponse(response, registry: _registry),
-        ),
+      final problem = KumweResult<KumweRecordMutationDocument>.problem(
+        KumweProblem.fromResponse(response, registry: _registry),
       );
+      if (response.statusCode >= 500) {
+        // A server error is not evidence of refusal: the mutation may
+        // have committed before the failure. Keep the intent alive.
+        return KumweMutationOutcome.ambiguousServerError(problem);
+      }
+      return KumweMutationOutcome.fromProblem(problem);
     }
     if (expectedStatus != null && response.statusCode != expectedStatus) {
       throw KumweProtocolException(
@@ -776,6 +818,93 @@ final class KumweBusinessApi {
     );
   }
 
+  /// Serializes a closed query document into the observed deepObject
+  /// query-string grammar: nested members become bracketed keys, object
+  /// lists become indexed brackets, scalar lists become `key[]` repeats,
+  /// and booleans travel as the accepted `true`/`false` spellings.
+  static Map<String, Object> _flattenQueryDocument(
+    Map<String, Object?> document,
+  ) {
+    final flattened = <String, Object>{};
+    void walk(String prefix, Object? value) {
+      if (value is Map<String, Object?>) {
+        for (final entry in value.entries) {
+          walk(
+            prefix.isEmpty ? entry.key : '$prefix[${entry.key}]',
+            entry.value,
+          );
+        }
+        return;
+      }
+      if (value is List<Object?>) {
+        if (value.every((item) => item is! Map && item is! List)) {
+          flattened['$prefix[]'] = [for (final item in value) _scalar(item)];
+          return;
+        }
+        for (var index = 0; index < value.length; index++) {
+          walk('$prefix[$index]', value[index]);
+        }
+        return;
+      }
+      flattened[prefix] = _scalar(value);
+    }
+
+    walk('', document);
+    return flattened;
+  }
+
+  static String _scalar(Object? value) {
+    if (value is bool) {
+      return value ? 'true' : 'false';
+    }
+    if (value is int) {
+      return '$value';
+    }
+    if (value is String) {
+      return value;
+    }
+    throw ArgumentError.value(
+      value.runtimeType,
+      'query',
+      'Query documents carry strings, integers and booleans.',
+    );
+  }
+
+  static void _requireStringLiterals(KumweRecordFilter? node) {
+    switch (node) {
+      case null:
+        return;
+      case KumweComparisonFilter(:final value):
+        if (value is! String) {
+          throw ArgumentError.value(
+            value.runtimeType,
+            'query',
+            'Browse filter literals are strings on this wire; use '
+                'search() for typed comparisons.',
+          );
+        }
+      case KumweSetFilter(:final values):
+        for (final value in values) {
+          if (value is! String) {
+            throw ArgumentError.value(
+              value.runtimeType,
+              'query',
+              'Browse filter literals are strings on this wire; use '
+                  'search() for typed comparisons.',
+            );
+          }
+        }
+      case KumweBooleanFilter(:final children):
+        for (final child in children) {
+          _requireStringLiterals(child);
+        }
+      case KumweRelationFilter(:final target):
+        _requireStringLiterals(target);
+      case KumweTextFilter() || KumweNullFilter():
+        break;
+    }
+  }
+
   static void _requireHandle(String value, String name) {
     if (!KumweBusinessHandles.isHandle(value)) {
       throw ArgumentError.value(
@@ -785,6 +914,20 @@ final class KumweBusinessApi {
       );
     }
   }
+
+  static void _requireDefinition(String value) {
+    if (!KumweBusinessHandles.isDefinitionHandle(value)) {
+      throw ArgumentError.value(
+        '<definition>',
+        'definition',
+        'Definition handles are bounded namespaced identifiers.',
+      );
+    }
+  }
+
+  static final RegExp _uuidPattern = RegExp(
+    r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+  );
 
   static void _requireRecordId(String value) {
     if (value.isEmpty ||

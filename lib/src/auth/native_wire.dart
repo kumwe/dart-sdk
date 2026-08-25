@@ -339,7 +339,7 @@ final class KumweNativeDiscoveryDocument {
 /// needs to use it safely. This reader validates the *proposed* shape as a
 /// working consumer; core adoption (`CORE-AUTH-001`) replaces the wire
 /// document, not this reader. Secret material is redacted from diagnostics
-/// and released to exactly one [KumweAccessToken].
+/// and leaves this reader only through [toAccessToken].
 final class KumweNativeTokenResponse {
   /// Validates a token response document.
   factory KumweNativeTokenResponse.fromJson(Map<String, Object?> json) {
@@ -418,9 +418,17 @@ final class KumweNativeTokenResponse {
       }
       for (final entry in rawGenerations.entries) {
         final value = entry.value;
-        if (value is! String) {
+        if (!_generationKeyPattern.hasMatch(entry.key)) {
           throw const FormatException(
-            'Authority generation values are strings.',
+            'Authority generation keys are bounded identifiers.',
+          );
+        }
+        if (value is! String ||
+            value.isEmpty ||
+            value.length > 191 ||
+            !_generationValuePattern.hasMatch(value)) {
+          throw const FormatException(
+            'Authority generation values are bounded identifiers.',
           );
         }
         generations[entry.key] = value;
@@ -538,6 +546,14 @@ final class KumweNativeTokenResponse {
       'KumweNativeTokenResponse(${credentialReference.value}, '
       'site: $site, <redacted>)';
 
+  static final RegExp _generationKeyPattern = RegExp(
+    r'^[a-z0-9][a-z0-9._-]{0,63}$',
+  );
+
+  static final RegExp _generationValuePattern = RegExp(
+    r'^[A-Za-z0-9][A-Za-z0-9._:-]{0,190}$',
+  );
+
   static String? _identifier(
     Map<String, Object?> json,
     String member, {
@@ -578,6 +594,17 @@ final class KumweNativeWebSessionResponse {
         'Web-session responses carry a bounded HTTPS handoff URL.',
       );
     }
+    // Uri.parse embeds its source in its FormatException, which would
+    // put the secret URL into diagnostics; parse tentatively instead and
+    // refuse with a redacted error.
+    final parsedHandoff = Uri.tryParse(handoffUrl);
+    if (parsedHandoff == null ||
+        !parsedHandoff.isScheme('https') ||
+        parsedHandoff.host.isEmpty) {
+      throw const FormatException(
+        'Web-session responses carry a bounded HTTPS handoff URL.',
+      );
+    }
     final expiresIn = json['expires_in'];
     if (expiresIn is! int ||
         expiresIn < KumweWebSessionHandoff.minTtlSeconds ||
@@ -587,7 +614,7 @@ final class KumweNativeWebSessionResponse {
       );
     }
     return KumweNativeWebSessionResponse._(
-      handoffUrl: Uri.parse(handoffUrl),
+      handoffUrl: parsedHandoff,
       expiresIn: expiresIn,
     );
   }

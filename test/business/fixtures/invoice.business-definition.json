@@ -1,20 +1,35 @@
 {
   "id": "0f8fad5b-d9cb-469f-a165-70867728950e",
-  "handle": "invoice",
+  "handle": "kumwe.accounting.invoice",
   "singular_label": "Invoice",
   "plural_label": "Invoices",
   "version": 4,
   "checksum": "9b74c9897bac770ffc029102a200c5de1bc9ff5b1e871f2ab1bd928101eaf3e4",
-  "owner": {"type": "extension", "identifier": "kumwe.accounting"},
+  "owner": {
+    "type": "extension",
+    "identifier": "kumwe.accounting"
+  },
   "scope": "site_organization",
   "soft_delete": true,
   "workflow": {
     "initial_state": "draft",
     "states": [
-      {"handle": "draft", "label": "Draft"},
-      {"handle": "issued", "label": "Issued"},
-      {"handle": "paid", "label": "Paid"},
-      {"handle": "written_off", "label": "Written off"}
+      {
+        "handle": "draft",
+        "label": "Draft"
+      },
+      {
+        "handle": "issued",
+        "label": "Issued"
+      },
+      {
+        "handle": "paid",
+        "label": "Paid"
+      },
+      {
+        "handle": "written_off",
+        "label": "Written off"
+      }
     ]
   },
   "operation": "read",
@@ -34,7 +49,9 @@
       "conditional": false,
       "form_group": "identity",
       "order": 1,
-      "placements": ["header"],
+      "placements": [
+        "header"
+      ],
       "uses": {
         "create": false,
         "update": false,
@@ -46,7 +63,10 @@
         "report": true,
         "export": true
       },
-      "schema": {"type": "string", "readOnly": true}
+      "schema": {
+        "type": "string",
+        "readOnly": true
+      }
     },
     {
       "handle": "total",
@@ -63,7 +83,9 @@
       "conditional": false,
       "form_group": "totals",
       "order": 9,
-      "placements": ["totals"],
+      "placements": [
+        "totals"
+      ],
       "uses": {
         "create": false,
         "update": false,
@@ -78,10 +100,19 @@
       "schema": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["amount", "currency"],
+        "required": [
+          "amount",
+          "currency"
+        ],
         "properties": {
-          "amount": {"type": "string", "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$"},
-          "currency": {"type": "string", "maxLength": 32}
+          "amount": {
+            "type": "string",
+            "pattern": "^-?[0-9]+(?:\\.[0-9]+)?$"
+          },
+          "currency": {
+            "type": "string",
+            "maxLength": 32
+          }
         }
       }
     },
@@ -112,7 +143,13 @@
         "report": true,
         "export": true
       },
-      "schema": {"type": ["string", "null"], "format": "date"}
+      "schema": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date"
+      }
     },
     {
       "handle": "notes",
@@ -141,7 +178,13 @@
         "report": false,
         "export": true
       },
-      "schema": {"type": ["string", "null"], "maxLength": 2000}
+      "schema": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "maxLength": 2000
+      }
     }
   ],
   "views": [
@@ -150,21 +193,40 @@
       "label": "Invoices",
       "kind": "list",
       "custom": false,
-      "fields": ["number", "total", "issued_on"],
-      "filters": ["issued_on", "total"],
-      "sorts": ["number", "issued_on"]
+      "fields": [
+        "number",
+        "total",
+        "issued_on"
+      ],
+      "filters": [
+        "issued_on",
+        "total"
+      ],
+      "sorts": [
+        "number",
+        "issued_on"
+      ]
     },
     {
       "handle": "aging",
       "label": "Aging report",
       "kind": "list",
       "custom": true,
-      "fields": ["number", "total"],
+      "fields": [
+        "number",
+        "total"
+      ],
       "filters": [],
       "sorts": [],
       "custom_contract": {
-        "query_schema": {"type": "object", "additionalProperties": false},
-        "result_schema": {"type": "object", "additionalProperties": false}
+        "query_schema": {
+          "type": "object",
+          "additionalProperties": false
+        },
+        "result_schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
       }
     }
   ],
@@ -188,10 +250,20 @@
         "command_schema": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["reason"],
-          "properties": {"reason": {"type": "string", "maxLength": 500}}
+          "required": [
+            "reason"
+          ],
+          "properties": {
+            "reason": {
+              "type": "string",
+              "maxLength": 500
+            }
+          }
         },
-        "result_schema": {"type": "object", "additionalProperties": false}
+        "result_schema": {
+          "type": "object",
+          "additionalProperties": false
+        }
       }
     }
   ],
@@ -200,7 +272,7 @@
       "handle": "lines",
       "label": "Lines",
       "kind": "owned_line_collection",
-      "target": "invoice_line",
+      "target": "kumwe.accounting.invoice_line",
       "required": true,
       "ordered": true
     },
@@ -208,7 +280,7 @@
       "handle": "customer",
       "label": "Customer",
       "kind": "many_to_one",
-      "target": "customer",
+      "target": "kumwe.accounting.customer",
       "required": true,
       "ordered": false
     }

@@ -246,6 +246,21 @@ void main() {
       );
     });
 
+    test('refuses out-of-grammar generation keys and values', () {
+      final badKey = fixture('token-response.native-authorization.json');
+      badKey['authority_generations'] = {'Bad Key': '1'};
+      expect(
+        () => KumweNativeTokenResponse.fromJson(badKey),
+        throwsFormatException,
+      );
+      final badValue = fixture('token-response.native-authorization.json');
+      badValue['authority_generations'] = {'policy_generation': 'x' * 500};
+      expect(
+        () => KumweNativeTokenResponse.fromJson(badValue),
+        throwsFormatException,
+      );
+    });
+
     test('refuses out-of-grammar scopes and oversized generation maps', () {
       final badScope = fixture('token-response.native-authorization.json');
       badScope['scope'] = 'has  double-space';
@@ -327,6 +342,23 @@ void main() {
         }),
         throwsFormatException,
       );
+    });
+
+    test('a URL the parser refuses never reaches diagnostics', () {
+      try {
+        KumweNativeWebSessionResponse.fromJson({
+          'handoff_url':
+              'https://cms.example.invalid:9x9/redeem/secret-handoff-0001',
+          'expires_in': 60,
+        });
+        fail('expected a FormatException');
+      } on FormatException catch (error) {
+        expect(
+          error.toString(),
+          isNot(contains('secret-handoff-0001')),
+          reason: 'Uri.parse would embed the secret URL in its message',
+        );
+      }
     });
 
     test('diagnostics never include the handoff URL', () {

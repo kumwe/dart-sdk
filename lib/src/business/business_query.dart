@@ -154,14 +154,15 @@ final class KumweComparisonFilter extends KumweRecordFilter {
 
 /// Substring/prefix/suffix text match over one field.
 final class KumweTextFilter extends KumweRecordFilter {
-  /// Validates a text node; [text] needs 1 to 512 characters.
+  /// Validates a text node; [text] needs 1 to 512 Unicode code points,
+  /// counted the way core counts them.
   factory KumweTextFilter(
     String field,
     KumweTextOperator operator,
     String text,
   ) {
     _requireHandle(field, 'field');
-    if (text.isEmpty || text.length > 512) {
+    if (text.isEmpty || text.runes.length > 512) {
       throw ArgumentError.value(
         '<text>',
         'text',
@@ -365,13 +366,14 @@ final class KumweRecordSort {
 
 /// Full-text search over declared searchable fields.
 final class KumweRecordSearch {
-  /// Validates a search clause; term 1..256 characters, 1..16 fields.
+  /// Validates a search clause; the term needs 1 to 256 non-blank Unicode
+  /// code points and 1 to 16 fields.
   factory KumweRecordSearch(String term, List<String> fields) {
-    if (term.isEmpty || term.length > 256) {
+    if (term.trim().isEmpty || term.runes.length > 256) {
       throw ArgumentError.value(
         '<term>',
         'term',
-        'Search terms need 1 to 256 characters.',
+        'Search terms need 1 to 256 non-blank code points.',
       );
     }
     if (fields.isEmpty || fields.length > 16) {

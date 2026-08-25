@@ -90,6 +90,7 @@ final class KumweCanonicalJson {
   }
 
   static void _writeString(String value, StringBuffer buffer) {
+    _requireWellFormed(value);
     buffer.write('"');
     for (final unit in value.codeUnits) {
       switch (unit) {
@@ -116,6 +117,32 @@ final class KumweCanonicalJson {
       }
     }
     buffer.write('"');
+  }
+
+  /// Refuses unpaired surrogate code units.
+  ///
+  /// UTF-8 encoding replaces every lone surrogate with U+FFFD, which
+  /// would map two *different* strings onto identical canonical bytes and
+  /// one shared digest — breaking the injectivity the idempotency binding
+  /// depends on. A well-formed pair passes; a lone half never does.
+  static void _requireWellFormed(String value) {
+    final units = value.codeUnits;
+    for (var index = 0; index < units.length; index++) {
+      final unit = units[index];
+      if (unit >= 0xd800 && unit <= 0xdbff) {
+        final next = index + 1 < units.length ? units[index + 1] : 0;
+        if (next < 0xdc00 || next > 0xdfff) {
+          throw const FormatException(
+            'Canonical JSON refuses unpaired surrogate code units.',
+          );
+        }
+        index++;
+      } else if (unit >= 0xdc00 && unit <= 0xdfff) {
+        throw const FormatException(
+          'Canonical JSON refuses unpaired surrogate code units.',
+        );
+      }
+    }
   }
 
   static int _compareCodeUnits(String left, String right) {

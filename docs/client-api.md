@@ -33,8 +33,9 @@ The current pure-Dart package exports an executable protocol and runtime foundat
   `KumweBusinessDefinition`/`KumweBusinessCatalog`, the budget-enforced `KumweRecordQuery` filter AST,
   `KumweBusinessRecord`/`KumweRecordPageDocument`/`KumweRecordMutationDocument`/`KumweRecordHistoryDocument`,
   approval inspection (`KumweBusinessApproval`) and caller-bound `KumweOperationStatusDocument`;
-- `KumweBusinessApi`, a typed transport speaking every observed `/api/v1/business` route with the exact
-  header discipline those routes enforce, replay/entity-tag cross-checks and non-enumerating problem results;
+- `KumweBusinessApi`, a typed transport speaking every observed `/api/v1/business` route — GET browse and
+  POST search included — with the exact header discipline those routes enforce, replay/entity-tag
+  cross-checks, 5xx-as-ambiguous mutation classification and non-enumerating problem results;
 - `KumweSession`, owning the token lifecycle discipline (one silent refresh per rejection, single-flight
   rotation, binding checks, proactive expiry) behind the application-owned authorization provider;
 - `KumweAuthorityPartition` and `KumweRuntimeCache`, dropping a caller's whole cached view when any

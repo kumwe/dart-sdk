@@ -4,6 +4,31 @@ import 'package:kumwe_sdk/kumwe_sdk.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('surrogate injectivity', () {
+    test('refuses unpaired surrogates instead of colliding digests', () {
+      final loneHigh = KumweJsonValue.from({
+        'note': String.fromCharCode(0xd800),
+      });
+      final loneLow = KumweJsonValue.from({
+        'note': String.fromCharCode(0xdc00),
+      });
+      expect(() => KumweCanonicalJson.encode(loneHigh), throwsFormatException);
+      expect(
+        () => KumweCanonicalJson.sha256Hex(loneLow),
+        throwsFormatException,
+      );
+    });
+
+    test('well-formed astral pairs stay distinct and canonical', () {
+      final rocket = KumweJsonValue.from({'note': '\u{1F680}'});
+      final comet = KumweJsonValue.from({'note': '\u{2604}'});
+      expect(
+        KumweCanonicalJson.sha256Hex(rocket),
+        isNot(KumweCanonicalJson.sha256Hex(comet)),
+      );
+    });
+  });
+
   String canonical(Object? value) =>
       utf8.decode(KumweCanonicalJson.encode(KumweJsonValue.from(value)));
 
