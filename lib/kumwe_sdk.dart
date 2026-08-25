@@ -11,6 +11,7 @@ export 'src/auth/credential_store.dart';
 export 'src/auth/login_area.dart';
 export 'src/auth/native_wire.dart';
 export 'src/auth/web_session_handoff.dart';
+export 'src/business/business_approval.dart';
 export 'src/business/business_definition.dart';
 export 'src/business/business_query.dart';
 export 'src/business/business_record.dart';
