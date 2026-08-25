@@ -1,8 +1,8 @@
 # Current status
 
-Status date: 2026-08-18
+Status date: 2026-08-25
 
-SDK stage: executable transport and contract foundation
+SDK stage: executable runtime foundation
 
 Audited core: `kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`
 
@@ -59,7 +59,7 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 | Durable client change feed | Missing | Internal outbox/events are not a client API |
 | Realtime client subscription | Missing | No SSE/WebSocket or push contract found |
 | Offline sync | Deferred | Foundations exist; queue/delta/reconciliation and numbering decision do not |
-| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context, the authorization-provider/credential-store ports, the authentication-link flow primitives (proof key, ticket, grant, login areas, account states, account directory, web-session handoff value) and the client-surface manifest interpreter; generated resource clients and all authorization endpoint behavior remain blocked on core contract maturity |
+| Dart SDK foundation | Partial | Pure-Dart transport, immutable JSON/HTTP values, bearer-provider boundary, Problem Details, discovery/health, OpenAPI cache/validation, proposal validation, tests and CI are implemented, plus exact-value types, idempotency/entity-tag primitives, HTTP-semantics retry classification, immutable execution context, the authorization-provider/credential-store ports, the authentication-link flow primitives (proof key, ticket, grant, login areas, account states, account directory, web-session handoff value) and the client-surface manifest interpreter. The runtime wave adds the sealed result kernel with the executable problem-registry reader, canonical JSON with digest binding, honest cursors/pages, the per-family mutation-semantics reader, canonical-byte mutation intents with ambiguous-keeps-intent outcomes, native discovery/token/web-session wire readers, the audit-grounded business models (definitions, budget-enforced query AST, records, mutation envelopes, history, approvals, operation status), the `KumweBusinessApi` transport over every observed business route, the `KumweSession` lifecycle (one silent refresh per rejection, single-flight rotation) and the authority-partitioned runtime cache, all under a cross-module abuse suite. Generated management resource clients and all authorization *endpoint* behavior remain blocked on core contract maturity |
 
 ## Gate status
 
@@ -70,9 +70,9 @@ They are local SDK gates, not names or statuses of current core programme gates.
 | --- | --- | --- |
 | G0 — Honest baseline | Scope, decisions, requirements and proposal contracts agree | Drafted in this foundation |
 | G1 — Core contract adoption | Core owns complete typed REST/errors/auth discovery and client-surface versions | Adoption package drafted under `contracts/`; blocked on upstream adoption |
-| G2 — Generated SDK alpha | Reproducible invariant client passes contract fixtures | Foundation implemented; generated resource client blocked on G1 |
-| G3 — Dynamic runtime alpha | Runtime metadata and client-surface interpreter pass lifecycle fixtures | Blocked on G1 |
-| G4 — Native authorization/context beta | Supported authorization-provider integration and context switching pass abuse tests | Blocked on upstream auth decision |
+| G2 — Generated SDK alpha | Reproducible invariant client passes contract fixtures | Foundation implemented, including the typed results, cursor pages and mutation receipts the generated client will sit on; generated resource client blocked on G1 |
+| G3 — Dynamic runtime alpha | Runtime metadata and client-surface interpreter pass lifecycle fixtures | Business catalog/search/record transport is implemented against the observed route family with authority-generation cache invalidation; the client-surface half stays blocked on G1 |
+| G4 — Native authorization/context beta | Supported authorization-provider integration and context switching pass abuse tests | Session lifecycle, context binding checks and the first cross-module abuse suite are implemented behind the provider port; authorization endpoint behavior stays blocked on upstream auth adoption |
 | G5 — Advertised profile parity | Every advertised profile passes cross-surface conformance | Not started |
 | G6 — Stable release | Compatibility, package, documentation and release-evidence gates pass | Not started |
 

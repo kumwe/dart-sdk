@@ -1,8 +1,8 @@
 # Client-facing API
 
-## Implemented foundation (`0.1.0-dev.5`)
+## Implemented foundation (`0.1.0-dev.6`)
 
-The current pure-Dart package exports an executable protocol foundation:
+The current pure-Dart package exports an executable protocol and runtime foundation:
 
 - immutable JSON, headers, requests, responses, and request-context values;
 - a redacting application-supplied bearer-token provider;
@@ -16,13 +16,37 @@ The current pure-Dart package exports an executable protocol foundation:
 - the immutable `KumweExecutionContext`/`KumweContextSelection` model with an authority-complete cache partition;
 - the `KumweAuthorizationProvider` and `KumweCredentialStore` application ports with non-secret token metadata;
 - `ClientSurfaceInterpreter`, reading the proposed client-surface grammar into immutable models with typed
-  per-surface rejections and omitted-hint notices; and
+  per-surface rejections and omitted-hint notices;
+- the sealed result kernel: `KumweResult` (`KumweValueResult`/`KumweProblemResult`/`KumweUnsupportedResult`),
+  `KumweResponseMetadata` and `KumweProblem` resolved through the executable `KumweProblemRegistry` reader,
+  so retry classes and typed extensions come from declared registry data;
+- canonical JSON (`KumweCanonicalJson`): code-unit key ordering, fixed escaping, refused doubles and a
+  SHA-256 digest for idempotency binding;
+- honest collection primitives: opaque bounded `KumweCursor` and `KumwePage` without invented totals;
+- the mutation engine: `KumweMutationSemantics` (per-family declared replay/retention/late-duplicate and
+  precondition rules), `KumweMutationIntent` freezing canonical bytes to one idempotency key, and
+  `KumweMutationOutcome` whose ambiguous state keeps the intent alive instead of minting a fresh key;
+- executable native wire readers for the proposed discovery, token-response and web-session documents
+  (`KumweNativeDiscoveryDocument`, `KumweNativeTokenResponse`, `KumweNativeWebSessionResponse`,
+  `KumweContractVersion`);
+- audit-grounded business models for the observed generated surface: policy-filtered
+  `KumweBusinessDefinition`/`KumweBusinessCatalog`, the budget-enforced `KumweRecordQuery` filter AST,
+  `KumweBusinessRecord`/`KumweRecordPageDocument`/`KumweRecordMutationDocument`/`KumweRecordHistoryDocument`,
+  approval inspection (`KumweBusinessApproval`) and caller-bound `KumweOperationStatusDocument`;
+- `KumweBusinessApi`, a typed transport speaking every observed `/api/v1/business` route with the exact
+  header discipline those routes enforce, replay/entity-tag cross-checks and non-enumerating problem results;
+- `KumweSession`, owning the token lifecycle discipline (one silent refresh per rejection, single-flight
+  rotation, binding checks, proactive expiry) behind the application-owned authorization provider;
+- `KumweAuthorityPartition` and `KumweRuntimeCache`, dropping a caller's whole cached view when any
+  authority generation, organization, workspace, site, credential or origin changes; and
 - OpenAPI/JSON Schema proposal validators and repository tooling.
 
 `KumweClient` currently accepts `KumweClientOptions`, an injected `KumweTransport`, and optional contract-cache
-configuration. It implements only `discover`, `liveness`, `readiness`, and `fetchOpenApiContract`. It intentionally
-has no generated content, identity, business, media, or other resource clients while the pinned core OpenAPI fails
-the generation gate. See [Current status](status.md) and the package tests for executable evidence.
+configuration. It implements `discover`, `liveness`, `readiness`, and `fetchOpenApiContract`. `KumweBusinessApi`
+speaks the observed generated business surface, which is real audited core behavior rather than a proposal; the
+generated content, identity, media and other management resource clients remain intentionally absent while the
+pinned core OpenAPI fails the generation gate. See [Current status](status.md) and the package tests for
+executable evidence.
 
 ## Target API after contract adoption
 
@@ -67,16 +91,20 @@ Asking for an unavailable service returns a typed compatibility result. It never
 
 ## Results and failures
 
-Network and server outcomes use an explicit result rather than throwing for expected API failures:
+Network and server outcomes use an explicit result rather than throwing for expected API failures. This shape is
+implemented today:
 
 ```dart
 sealed class KumweResult<T> {}
-final class KumweSuccess<T> extends KumweResult<T> {
+final class KumweValueResult<T> extends KumweResult<T> {
   final T value;
   final KumweResponseMetadata metadata;
 }
-final class KumweFailure<T> extends KumweResult<T> {
+final class KumweProblemResult<T> extends KumweResult<T> {
   final KumweProblem problem;
+}
+final class KumweUnsupportedResult<T> extends KumweResult<T> {
+  final KumweUnsupportedReason reason; // contract, capability or context
 }
 ```
 
@@ -94,7 +122,10 @@ Authentication expiry, denial, stale ETag, validation, unsupported contract and 
 - optional expected/actual version; and
 - original opaque extension data only when the contract explicitly marks it safe.
 
-Until `CORE-API-002` is adopted, error mapping remains experimental and no public enum may pretend to be complete.
+Until `CORE-API-002` is adopted, error mapping remains experimental and no public enum may pretend to be
+complete. The implemented `KumweProblemRegistry` therefore reads the *registry document* rather than hard-coding
+codes: only registry-declared extensions cross the boundary, an unregistered code is classified by HTTP status
+alone, and adoption replaces the document, not the reader.
 
 ## Context and authorization providers
 

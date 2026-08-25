@@ -69,7 +69,9 @@ Target gate: **G2 — Generated SDK alpha**
   HTTP-semantics retry classification, immutable execution context, and the authorization-provider and
   credential-store ports.
 - Implement the remaining transport abstractions the generated client needs: typed results, cursor pages and
-  mutation receipts against the adopted contract.
+  mutation receipts against the adopted contract. Done ahead of adoption as SDK-owned primitives: the sealed
+  `KumweResult` kernel, `KumwePage`/`KumweCursor`, and `KumweMutationIntent`/`KumweMutationOutcome` bound to
+  canonical bytes; adoption re-points their inputs, not their shapes.
 - Add fake-server and released-core contract suites.
 - Publish an internal alpha only; do not advertise graphical parity.
 
@@ -80,12 +82,16 @@ supported Dart runtimes.
 
 Target gate: **G3 — Dynamic runtime alpha**
 
-- Implement policy-filtered business catalog transport independent of generated models.
+- Implement policy-filtered business catalog transport independent of generated models. Done:
+  `KumweBusinessApi` speaks the observed definition catalog, search, record, relation, history, approval and
+  operation-status routes with their exact header discipline.
 - Validate runtime schemas and manifests against the adopted bounded grammar.
 - Immutable manifest models with typed unsupported-vocabulary results are implemented against the *proposed*
   grammar (`ClientSurfaceInterpreter`); re-point them at the adopted grammar once core adopts a descendant. Host
   screen models remain client-owned.
-- Cache by server-provided generation/checksum and invalidate on authority changes.
+- Cache by server-provided generation/checksum and invalidate on authority changes. Done for the in-memory
+  runtime layer: `KumweAuthorityPartition` digests origin, site, credential, organization, workspace and every
+  authority generation, and `KumweRuntimeCache` drops a caller's whole view when any of them moves.
 - Prove activate/disable/upgrade lifecycle removal without loading executable extension code.
 
 Exit evidence: extension lifecycle fixtures, schema-fuzz tests, locale/accessibility model fixtures and no-code static
@@ -101,7 +107,9 @@ Target gate: **G4 — Native authorization/context beta**
 - Implement the multi-account roster: explicit origin/area/credential selection, switching and removal, plus
   site/organization/workspace selection and invalidation.
 - Integrate the adopted web-session handoff with single-use, exact-origin, redacted URL handling.
-- Add retry classification, clock handling and redacted diagnostics.
+- Add retry classification, clock handling and redacted diagnostics. Groundwork done: `KumweSession` owns the
+  one-silent-refresh-per-rejection and single-flight rotation discipline behind the provider port, and the
+  runtime abuse suite already exercises origin confinement, context collision and diagnostics hygiene.
 - Run token theft, link-interception, enumeration, guest-escape, redirect, downgrade, context-confusion and
   local-storage abuse cases.
 
