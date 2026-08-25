@@ -41,6 +41,8 @@ export 'src/problem/kumwe_problem.dart';
 export 'src/problem/problem_details.dart';
 export 'src/problem/problem_registry.dart';
 export 'src/result/kumwe_result.dart';
+export 'src/session/authority_cache.dart';
+export 'src/session/kumwe_session.dart';
 export 'src/surface/client_surface_interpreter.dart';
 export 'src/surface/client_surface_manifest.dart';
 export 'src/surface/client_surface_vocabulary.dart';
