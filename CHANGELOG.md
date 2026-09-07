@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+- Fence session token acquisition by lifecycle generation. Superseded interactive
+  or silent work cannot replace newer credentials or escalate their session state;
+  sign-out also rejects late interactive results. Preserve current credentials when
+  a provider reuses their reference and preserve newer work during old cleanup.
+- Recheck the failed token after asynchronous 401 invalidation so concurrent late
+  failures cannot discard a recovered token or launch an extra rotation.
+- Cancel the unconsumed HTTP response stream when its declared length already
+  exceeds the configured limit; injected HTTP clients remain caller-owned.
+- Add deterministic package-owned lifecycle and response-resource regressions.
+  These are client behavior tests, not evidence of server contract adoption.
+
 ## 0.1.0-dev.6
 
 The runtime wave: an executable, audit-grounded runtime foundation built from a fresh read-only audit of the

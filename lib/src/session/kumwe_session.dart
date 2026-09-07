@@ -87,6 +87,8 @@ final class KumweSession implements BearerTokenProvider {
   KumweAccessToken? _token;
   KumweSessionState _state = KumweSessionState.active;
   Future<KumweAccessToken>? _inFlight;
+  int _acquisitionGeneration = 0;
+  Completer<void> _generationChanged = Completer<void>();
   KumweCredentialReference? _bornFromRejection;
   KumweCredentialReference? _lastCredential;
 
@@ -165,10 +167,16 @@ final class KumweSession implements BearerTokenProvider {
       // already moved on. Hand back whatever is currently usable.
       return _usableAccessToken();
     }
+    final generation = _acquisitionGeneration;
     await _provider.invalidate(held.credential);
     if (_state == KumweSessionState.signedOut) {
       // Signed out while the invalidation was in flight; stay closed.
       return null;
+    }
+    if (generation != _acquisitionGeneration || !identical(_token, held)) {
+      // Invalidation suspended while another caller recovered or started
+      // interactive authentication. Its result belongs to the old token.
+      return _usableAccessToken();
     }
     _token = null;
     if (held.credential == _bornFromRejection) {
@@ -182,10 +190,14 @@ final class KumweSession implements BearerTokenProvider {
         KumweTokenRequestReason.refresh,
         previous: held.credential,
       );
+      if (generation != _acquisitionGeneration) {
+        return await _usableAccessToken();
+      }
       _bornFromRejection = replacement.credential;
       return replacement;
     } on Object {
-      if (_state != KumweSessionState.signedOut) {
+      if (generation == _acquisitionGeneration &&
+          _state != KumweSessionState.signedOut) {
         _state = KumweSessionState.reauthenticationRequired;
       }
       rethrow;
@@ -194,21 +206,37 @@ final class KumweSession implements BearerTokenProvider {
 
   /// Re-authenticates interactively through the provider after silent
   /// refresh was exhausted, restoring the session on success.
+  ///
+  /// A new interactive attempt supersedes earlier acquisition work. An
+  /// earlier successful provider result is refused with
+  /// [KumweAuthenticationException] instead of replacing the newer session.
+  /// Its cleanup may wait for newer acquisition to settle so a shared
+  /// credential reference is not invalidated; sign-out interrupts that wait.
   Future<KumweAccessToken> reauthenticate() async {
     if (_state == KumweSessionState.signedOut) {
       throw StateError('A signed-out session cannot re-authenticate.');
     }
     final previous = _token?.credential ?? _lastCredential;
+    _advanceAcquisitionGeneration();
+    final generation = _acquisitionGeneration;
+    _inFlight = null;
     _token = null;
     _bornFromRejection = null;
-    final token = await _request(
-      previous == null
-          ? KumweTokenRequestReason.initial
-          : KumweTokenRequestReason.reauthentication,
-      previous: previous,
-    );
-    _adopt(token);
-    return token;
+    _state = KumweSessionState.refreshing;
+    try {
+      return await _acquire(
+        previous == null
+            ? KumweTokenRequestReason.initial
+            : KumweTokenRequestReason.reauthentication,
+        previous: previous,
+      );
+    } on Object {
+      if (generation == _acquisitionGeneration &&
+          _state != KumweSessionState.signedOut) {
+        _state = KumweSessionState.reauthenticationRequired;
+      }
+      rethrow;
+    }
   }
 
   /// Signs out: invalidates the held credential and closes the session.
@@ -217,6 +245,7 @@ final class KumweSession implements BearerTokenProvider {
   /// reporting — not blocking on — an unreachable server-side revocation.
   Future<void> signOut() async {
     final held = _token;
+    _advanceAcquisitionGeneration();
     _token = null;
     _state = KumweSessionState.signedOut;
     _inFlight = null;
@@ -233,24 +262,52 @@ final class KumweSession implements BearerTokenProvider {
     if (running != null) {
       return running;
     }
-    final flight = _request(reason, previous: previous)
+    final generation = _acquisitionGeneration;
+    late final Future<KumweAccessToken> flight;
+    flight = _request(reason, previous: previous)
         .then((token) async {
-          if (_state == KumweSessionState.signedOut) {
-            // The session closed while the provider was working; the
-            // fresh credential must die unused rather than leak out live.
-            await _provider.invalidate(token.credential);
+          if (_state == KumweSessionState.signedOut ||
+              generation != _acquisitionGeneration) {
+            // A newer request may return the same stored credential. Let
+            // current acquisition settle before deciding what is unused.
+            // Recheck the slot because another interactive attempt can
+            // supersede that request while it is suspended too.
+            while (_inFlight != null && !identical(_inFlight, flight)) {
+              try {
+                await Future.any<void>([
+                  _inFlight!.then<void>((_) {}),
+                  _generationChanged.future,
+                ]);
+              } on Object {
+                // Its caller owns that error. Cleanup still checks the
+                // current held credential after the newer work finishes.
+              }
+            }
+            // Never invalidate a newer held token when the provider reused
+            // the same credential reference for concurrent requests.
+            if (_token?.credential != token.credential) {
+              await _provider.invalidate(token.credential);
+            }
             throw const KumweAuthenticationException(
-              'The session was signed out during token acquisition.',
+              'Token acquisition was superseded or the session was signed out.',
             );
           }
           _adopt(token);
           return token;
         })
         .whenComplete(() {
-          _inFlight = null;
+          if (identical(_inFlight, flight)) {
+            _inFlight = null;
+          }
         });
     _inFlight = flight;
     return flight;
+  }
+
+  void _advanceAcquisitionGeneration() {
+    _acquisitionGeneration += 1;
+    _generationChanged.complete();
+    _generationChanged = Completer<void>();
   }
 
   Future<KumweAccessToken> _request(

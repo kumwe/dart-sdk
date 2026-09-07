@@ -38,7 +38,8 @@ void main() {
     expect(
       cancelled,
       1,
-      reason: 'header refusal must release transport resources without waiting for body bytes',
+      reason:
+          'header refusal must release transport resources without waiting for body bytes',
     );
     transport.close();
     expect(
