@@ -1041,11 +1041,7 @@ final class JsonSchemaContractValidator {
           r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$',
         ).hasMatch(instance)) {
       issues.add(ContractValidationIssue(location, 'String is not a UUID.'));
-    } else if (format == 'date-time' &&
-        (!instance.contains('T') ||
-            instance.length < 10 ||
-            !_isCalendarDate(instance.substring(0, 10)) ||
-            DateTime.tryParse(instance) == null)) {
+    } else if (format == 'date-time' && !_isDateTime(instance)) {
       issues.add(
         ContractValidationIssue(
           location,
@@ -1063,7 +1059,7 @@ final class JsonSchemaContractValidator {
   }
 
   static bool _isCalendarDate(String value) {
-    if (!_date.hasMatch(value)) {
+    if (value.length != 10 || !_date.hasMatch(value)) {
       return false;
     }
     final year = int.parse(value.substring(0, 4));
@@ -1073,6 +1069,39 @@ final class JsonSchemaContractValidator {
     // against UTC construction before any timestamp offset is applied.
     final date = DateTime.utc(year, month, day);
     return date.year == year && date.month == month && date.day == day;
+  }
+
+  static bool _isDateTime(String value) {
+    final match = _dateTime.firstMatch(value);
+    if (match == null ||
+        match.end != value.length ||
+        !_isCalendarDate(match[1]!)) {
+      return false;
+    }
+    if (match[4] != '60') {
+      return true;
+    }
+    // Keep the leap-second spelling rather than normalizing :60 to the
+    // next minute. It is possible only at a UTC month-end boundary. This
+    // local syntax check does not certify an announced/historical leap.
+    final date = match[1]!;
+    final precedingSecond = DateTime.utc(
+      int.parse(date.substring(0, 4)),
+      int.parse(date.substring(5, 7)),
+      int.parse(date.substring(8, 10)),
+      int.parse(match[2]!),
+      int.parse(match[3]!),
+      59,
+    );
+    var offsetMinutes = 0;
+    if (match[6] != null) {
+      offsetMinutes = int.parse(match[7]!) * 60 + int.parse(match[8]!);
+      if (match[6] == '-') offsetMinutes = -offsetMinutes;
+    }
+    final utc = precedingSecond.subtract(Duration(minutes: offsetMinutes));
+    return utc.hour == 23 &&
+        utc.minute == 59 &&
+        utc.day == DateTime.utc(utc.year, utc.month + 1, 0).day;
   }
 
   void _validateNumberValue(
@@ -1393,5 +1422,11 @@ final class JsonSchemaContractValidator {
 
   static final RegExp _date = RegExp(
     r'^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])$',
+  );
+
+  static final RegExp _dateTime = RegExp(
+    r'^([0-9]{4}-[0-9]{2}-[0-9]{2})[Tt]'
+    r'([01][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9]|60)'
+    r'(?:\.[0-9]+)?([Zz]|([+-])([01][0-9]|2[0-3]):([0-5][0-9]))$',
   );
 }
