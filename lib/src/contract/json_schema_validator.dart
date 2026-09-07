@@ -865,6 +865,22 @@ final class JsonSchemaContractValidator {
         }
       }
     }
+    final dependentSchemas = schema['dependentSchemas'];
+    if (dependentSchemas is Map<String, Object?>) {
+      for (final entry in dependentSchemas.entries) {
+        if (instance.containsKey(entry.key)) {
+          _validateValue(
+            instance,
+            entry.value,
+            document: document,
+            baseUri: baseUri,
+            location: location,
+            issues: issues,
+            depth: depth + 1,
+          );
+        }
+      }
+    }
   }
 
   void _validateArrayValue(
@@ -1026,14 +1042,17 @@ final class JsonSchemaContractValidator {
         ).hasMatch(instance)) {
       issues.add(ContractValidationIssue(location, 'String is not a UUID.'));
     } else if (format == 'date-time' &&
-        (!instance.contains('T') || DateTime.tryParse(instance) == null)) {
+        (!instance.contains('T') ||
+            instance.length < 10 ||
+            !_isCalendarDate(instance.substring(0, 10)) ||
+            DateTime.tryParse(instance) == null)) {
       issues.add(
         ContractValidationIssue(
           location,
           'String is not an RFC 3339 date-time.',
         ),
       );
-    } else if (format == 'date' && !_date.hasMatch(instance)) {
+    } else if (format == 'date' && !_isCalendarDate(instance)) {
       issues.add(
         ContractValidationIssue(
           location,
@@ -1041,6 +1060,19 @@ final class JsonSchemaContractValidator {
         ),
       );
     }
+  }
+
+  static bool _isCalendarDate(String value) {
+    if (!_date.hasMatch(value)) {
+      return false;
+    }
+    final year = int.parse(value.substring(0, 4));
+    final month = int.parse(value.substring(5, 7));
+    final day = int.parse(value.substring(8, 10));
+    // Dart normalizes invalid calendar fields. Compare the source fields
+    // against UTC construction before any timestamp offset is applied.
+    final date = DateTime.utc(year, month, day);
+    return date.year == year && date.month == month && date.day == day;
   }
 
   void _validateNumberValue(

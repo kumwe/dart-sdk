@@ -1,8 +1,48 @@
+import 'dart:convert';
+
 import 'package:kumwe_sdk/kumwe_sdk.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('KumweJsonValue', () {
+    for (final objectNodes in [false, true]) {
+      test('depth 128 succeeds and 129 is refused (objects: $objectNodes)', () {
+        Object? source = 'leaf';
+        for (var depth = 0; depth < 128; depth++) {
+          source = objectNodes
+              ? <String, Object?>{'child': source}
+              : <Object?>[source];
+        }
+        final encoded = jsonEncode(source);
+        expect(KumweJsonValue.from(source).encode(), encoded);
+        expect(KumweJsonValue.parse(encoded).encode(), encoded);
+        if (objectNodes) {
+          expect(
+            KumweJsonObject.from(source! as Map<String, Object?>).encode(),
+            encoded,
+          );
+          expect(KumweJsonObject.parse(encoded).encode(), encoded);
+        }
+        source = objectNodes
+            ? <String, Object?>{'child': source}
+            : <Object?>[source];
+        expect(() => KumweJsonValue.from(source), throwsFormatException);
+        expect(
+          () => KumweJsonValue.parse(jsonEncode(source)),
+          throwsFormatException,
+        );
+        if (objectNodes) {
+          expect(
+            () => KumweJsonObject.from(source! as Map<String, Object?>),
+            throwsFormatException,
+          );
+          expect(
+            () => KumweJsonObject.parse(jsonEncode(source)),
+            throwsFormatException,
+          );
+        }
+      });
+    }
     test('deeply freezes object and array values', () {
       final source = <String, Object?>{
         'record': <String, Object?>{

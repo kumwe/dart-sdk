@@ -12,6 +12,10 @@
   exceeds the configured limit; injected HTTP clients remain caller-owned.
 - Add deterministic package-owned lifecycle and response-resource regressions.
   These are client behavior tests, not evidence of server contract adoption.
+- Refuse impossible Gregorian dates and dependent-schema violations, and keep
+  malformed field schemas from silently producing sendable business values.
+- Complete the public module test-ownership inventory; add exact JSON depth,
+  health-probe and actual immutable-after-create boundary cases.
 
 ## 0.1.0-dev.6
 

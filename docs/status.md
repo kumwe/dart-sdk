@@ -63,6 +63,12 @@ contract/SDK-readiness gate followed by a final parity-qualification gate; both 
 
 ## Gate status
 
+The [public module test-ownership review](test-ownership.md) covers all 51 SDK
+exports and their package/host boundaries. Its concrete lifecycle, response
+resource, schema, JSON-depth, immutable-field and health-probe findings have
+package-owned regressions. This is local client qualification; it does not
+advance core contract adoption or cross-surface parity gates.
+
 These gates are outcomes, not calendar phases. The separate [roadmap](roadmap.md) schedules work toward them.
 They are local SDK gates, not names or statuses of current core programme gates.
 
