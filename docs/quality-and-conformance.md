@@ -28,6 +28,38 @@ Unit coverage alone cannot establish any of these.
 | Dependency/license/secret scans | Supply-chain and accidental credential controls |
 | Package consumer smoke test | Verify a clean downstream package can compile and use the public API |
 
+## Package-owned client boundaries
+
+Portable SDK behavior, validation, request construction, canonical wire values,
+and lifecycle conformance execute in this repository. Core retains its actual
+routing, policy, persistence and server-authority tests; applications retain
+concrete provider/storage/platform wiring and supported end-to-end scenarios.
+An extracted PHP package's behavior suite does not replace client codec tests,
+and client fixtures do not prove server behavior or proposal adoption.
+
+The lifecycle audit started from SDK source
+`88f4c82d575d65005fc75e367bff9f4e0f65d056` (40 test files). Focused source review
+of the session, authorization-provider and HTTP transport boundaries found real
+uncovered behaviors, now exercised by these package-owned tests:
+
+| Boundary | Portable evidence |
+| --- | --- |
+| Session acquisition, expiry, context binding, one-refresh-only and terminal sign-out | `test/session/kumwe_session_test.dart` |
+| Superseded interactive/silent results, current credential reference reuse, stale refresh errors and concurrent delayed 401 invalidation | `test/session/session_lifecycle_boundaries_test.dart` |
+| HTTP request encoding and response policy | `test/transport/http_kumwe_transport_test.dart` |
+| Declared-size refusal cancels an unconsumed response; chunk overflow cancels delivery; exact-size response succeeds | `test/transport/response_lifecycle_test.dart` |
+
+The first regression commit `cd4e699a9668c4abe145d56b6ac50e567218a57c`
+demonstrates the three initial failures before production fixes. Additional
+controlled interleavings cover the generation defects found during independent
+review. All fixtures are synthetic and use public SDK APIs. The full suite runs
+in SDK CI on minimum Dart 3.8.0 and stable Dart.
+
+This is a concrete review of these client boundaries, not a completed per-export
+ownership inventory of the whole SDK. No App test was removed: authoritative
+server tests and actual SDK implementation tests protect different contracts.
+Full profile parity and released-core integration remain the separate gates below.
+
 ## Contract fixtures
 
 Core and SDK share fixture identities, not mutable copies. A fixture bundle includes:

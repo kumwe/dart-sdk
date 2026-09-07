@@ -84,6 +84,28 @@ is security-sensitive; adoption review and later conformance work must exercise 
 | Logout with unreachable revocation endpoint | Local material removed; uncertain server revocation recorded, never reported as success |
 | Token metadata claims a different site than requested | Session open fails closed; the SDK never adopts an unrequested context |
 
+## Session acquisition lifecycle
+
+`KumweSession` owns client lifecycle conformance independently of the server:
+an explicit interactive attempt supersedes previous acquisition work, and
+sign-out permanently closes that instance. Old results cannot overwrite a newer
+token; an old refresh error cannot require reauthentication after a newer
+interactive success. Delayed 401 invalidations recheck the failed token before
+clearing any current token. Cleanup preserves a newer held credential when a
+provider returns the same credential reference to concurrent requests.
+
+These controls use the existing application-owned provider port. Its invalidation
+operation targets one exact credential; server revocation and concrete secure
+storage behavior remain application/provider integration responsibilities.
+The deterministic misuse cases live in `test/session/session_lifecycle_boundaries_test.dart`;
+[ADR 0008](decisions/0008-session-acquisition-generation.md) records the decision.
+
+`HttpKumweTransport` cancels a response whose declared or delivered body exceeds
+its byte budget, including a declared-size refusal before any body arrives. It
+does not close an injected HTTP client, which remains owned by the caller.
+`test/transport/response_lifecycle_test.dart` verifies both refusal paths and
+successful completion at the exact ceiling.
+
 ## Input and schema validation
 
 Validation occurs before a runtime document becomes a model:

@@ -49,6 +49,8 @@ final class HttpKumweTransport implements KumweTransport {
       final streamed = await _client.send(outgoing);
       final declaredLength = streamed.contentLength;
       if (declaredLength != null && declaredLength > _maxResponseBytes) {
+        // Release the response without waiting for, or draining, its body.
+        await streamed.stream.listen(null).cancel();
         throw KumweTransportException(
           'The HTTP response exceeds the configured byte limit.',
         );
