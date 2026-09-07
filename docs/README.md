@@ -18,6 +18,7 @@ what can be built now.
 - [Security model](security.md)
 - [Compatibility and release](compatibility-and-release.md)
 - [Quality and conformance](quality-and-conformance.md)
+- [Public module test ownership](test-ownership.md)
 - [Draft machine contracts](../contracts/README.md)
 
 ## Programme

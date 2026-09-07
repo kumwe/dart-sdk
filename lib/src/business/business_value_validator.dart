@@ -151,7 +151,13 @@ final class KumweBusinessValueValidator {
         ),
       );
     } on FormatException {
-      return const [];
+      return [
+        KumweValueViolation(
+          field: field.handle,
+          code: 'schema',
+          message: 'The disclosed field schema could not be evaluated safely.',
+        ),
+      ];
     }
     return [
       for (final issue in result.issues)

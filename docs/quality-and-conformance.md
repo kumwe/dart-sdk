@@ -48,6 +48,9 @@ uncovered behaviors, now exercised by these package-owned tests:
 | Superseded interactive/silent results, current credential reference reuse, stale refresh errors and concurrent delayed 401 invalidation | `test/session/session_lifecycle_boundaries_test.dart` |
 | HTTP request encoding and response policy | `test/transport/http_kumwe_transport_test.dart` |
 | Declared-size refusal cancels an unconsumed response; chunk overflow cancels delivery; exact-size response succeeds | `test/transport/response_lifecycle_test.dart` |
+| JSON value/object nesting at 128 levels and refusal at 129 | `test/json/kumwe_json_test.dart` |
+| Gregorian calendar dates, whole-object dependent schemas, and safe refusal of malformed business schemas | `test/contract/json_schema_validator_test.dart`, `test/business/business_value_validator_test.dart` |
+| Anonymous liveness/readiness routing, valid outcomes and malformed status/identity refusal | `test/client/kumwe_client_test.dart` |
 
 The first regression commit `cd4e699a9668c4abe145d56b6ac50e567218a57c`
 demonstrates the three initial failures before production fixes. Additional
@@ -55,10 +58,22 @@ controlled interleavings cover the generation defects found during independent
 review. All fixtures are synthetic and use public SDK APIs. The full suite runs
 in SDK CI on minimum Dart 3.8.0 and stable Dart.
 
-This is a concrete review of these client boundaries, not a completed per-export
-ownership inventory of the whole SDK. No App test was removed: authoritative
-server tests and actual SDK implementation tests protect different contracts.
+The subsequent independent source review covers all 51 exported modules in the
+[test ownership inventory](test-ownership.md), records real package suites and
+host boundaries, and identifies the additional calendar, dependent-schema,
+malformed-fragment, depth, immutable-field and health-probe regressions. Every
+public module change must update that inventory; automatic per-export coverage
+enforcement is not claimed. No App test was removed: authoritative server tests
+and actual SDK implementation tests protect different contracts.
 Full profile parity and released-core integration remain the separate gates below.
+
+Calendar checks follow the Gregorian month/year limits in
+[RFC 3339 section 5.7](https://www.rfc-editor.org/rfc/rfc3339#section-5.7),
+checking source fields before timezone conversion because
+[Dart date parsing normalizes overflow](https://api.dart.dev/dart-core/DateTime/parse.html).
+This repair does not certify the existing validator's entire clock, offset or
+leap-second grammar. Whole-object dependent-schema checks implement the
+[JSON Schema 2020-12 applicator](https://json-schema.org/draft/2020-12/json-schema-core#section-10.2.2.4).
 
 ## Contract fixtures
 

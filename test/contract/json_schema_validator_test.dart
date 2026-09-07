@@ -4,6 +4,80 @@ import 'package:test/test.dart';
 void main() {
   final schemaUri = Uri.parse('file:///contracts/example.schema.json');
 
+  test('date formats refuse normalized impossible Gregorian dates', () {
+    const validDates = [
+      '0000-02-29',
+      '1900-02-28',
+      '2000-02-29',
+      '2024-02-29',
+      '2026-04-30',
+      '9999-12-31',
+    ];
+    const invalidDates = [
+      '1900-02-29',
+      '2000-02-30',
+      '2025-02-29',
+      '2026-04-31',
+      '2026-06-31',
+      '2026-00-01',
+      '2026-13-01',
+      '2026-01-00',
+      '2026-01-32',
+    ];
+    for (final format in ['date', 'date-time']) {
+      final schema = KumweJsonObject.from({'type': 'string', 'format': format});
+      for (final date in [...validDates, ...invalidDates]) {
+        for (final suffix
+            in format == 'date'
+                ? ['']
+                : ['T00:00:00Z', 'T23:30:00-05:30', 'T00:30:00+05:30']) {
+          final result = const JsonSchemaContractValidator().validateInstance(
+            KumweJsonValue.from('$date$suffix'),
+            schema: schema,
+            schemaUri: schemaUri,
+          );
+          expect(
+            result.isValid,
+            validDates.contains(date),
+            reason: '$format: $date$suffix',
+          );
+        }
+      }
+    }
+  });
+
+  test(
+    'dependentSchemas applies to the whole object only when its key exists',
+    () {
+      final schema = KumweJsonObject.from({
+        'type': 'object',
+        'properties': {'a': true, 'b': true, 'forbidden': true},
+        'additionalProperties': false,
+        'dependentSchemas': {
+          'a': {
+            'required': ['b'],
+          },
+          'forbidden': false,
+        },
+      });
+      for (final (value, valid) in <(Map<String, Object?>, bool)>[
+        ({}, true),
+        ({'b': 1}, true),
+        ({'a': 1, 'b': 2}, true),
+        ({'a': 1}, false),
+        ({'a': null}, false),
+        ({'forbidden': null}, false),
+      ]) {
+        final result = const JsonSchemaContractValidator().validateInstance(
+          KumweJsonValue.from(value),
+          schema: schema,
+          schemaUri: schemaUri,
+        );
+        expect(result.isValid, valid, reason: value.toString());
+      }
+    },
+  );
+
   test('validates bounded schema structure and local references', () {
     final schema = KumweJsonObject.from(_schema());
     final catalog = JsonSchemaCatalog()..add(schemaUri, schema);

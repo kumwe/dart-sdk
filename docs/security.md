@@ -106,6 +106,12 @@ does not close an injected HTTP client, which remains owned by the caller.
 `test/transport/response_lifecycle_test.dart` verifies both refusal paths and
 successful completion at the exact ceiling.
 
+Disclosed business schema fragments fail visibly if they cannot be evaluated,
+including malformed regular expressions. Calendar dates cannot pass by numeric
+normalization into another month, and present-key dependent schemas constrain
+the whole object, including explicitly null triggering members. Client checks
+remain supplementary to server validation; their tests belong in the SDK.
+
 ## Input and schema validation
 
 Validation occurs before a runtime document becomes a model:

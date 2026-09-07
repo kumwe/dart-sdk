@@ -12,6 +12,91 @@ void main() {
       'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
 
   group('public discovery', () {
+    test(
+      'health probes use configured base routes without credentials',
+      () async {
+        final transport = FakeKumweTransport([
+          _jsonResponse(200, {'status': 'alive', 'product': 'Kumwe CMS'}),
+          _jsonResponse(200, {'status': 'ready'}),
+        ]);
+        final client = KumweClient(
+          options: _options(authenticated: true),
+          transport: transport,
+        );
+        expect((await client.liveness()).isAlive, isTrue);
+        final readiness = await client.readiness();
+        expect(readiness.isReady, isTrue);
+        expect(readiness.state, KumweReadinessState.ready);
+        expect(transport.requests.map((request) => request.uri.toString()), [
+          'https://kumwe.test/cms/health/live',
+          'https://kumwe.test/cms/health/ready',
+        ]);
+        for (final request in transport.requests) {
+          expect(request.method, KumweHttpMethod.get);
+          expect(request.headers['authorization'], isNull);
+        }
+      },
+    );
+
+    test(
+      'liveness refuses malformed identity, status and HTTP outcome',
+      () async {
+        for (final (status, body, error)
+            in <(int, Map<String, Object?>, Matcher)>[
+              (
+                200,
+                {'status': 'alive', 'product': 'Another product'},
+                isA<KumweProtocolException>(),
+              ),
+              (
+                200,
+                {'status': 'dead', 'product': 'Kumwe CMS'},
+                isA<KumweProtocolException>(),
+              ),
+              (200, {'status': 'alive'}, isA<KumweProtocolException>()),
+              (
+                503,
+                {'status': 'alive', 'product': 'Kumwe CMS'},
+                isA<KumweApiException>(),
+              ),
+            ]) {
+          final client = KumweClient(
+            options: _options(),
+            transport: FakeKumweTransport([_jsonResponse(status, body)]),
+          );
+          await expectLater(
+            client.liveness(),
+            throwsA(error),
+            reason: '$status $body',
+          );
+        }
+      },
+    );
+
+    test(
+      'readiness refuses mismatched status/body and unexpected HTTP outcome',
+      () async {
+        for (final (status, body, error)
+            in <(int, Map<String, Object?>, Matcher)>[
+              (200, {'status': 'not_ready'}, isA<KumweProtocolException>()),
+              (503, {'status': 'ready'}, isA<KumweProtocolException>()),
+              (200, {'status': 'unknown'}, isA<KumweProtocolException>()),
+              (200, {}, isA<KumweProtocolException>()),
+              (404, {'status': 'ready'}, isA<KumweApiException>()),
+            ]) {
+          final client = KumweClient(
+            options: _options(),
+            transport: FakeKumweTransport([_jsonResponse(status, body)]),
+          );
+          await expectLater(
+            client.readiness(),
+            throwsA(error),
+            reason: '$status $body',
+          );
+        }
+      },
+    );
+
     test('reads API identity beneath the configured base path', () async {
       final transport = FakeKumweTransport([
         _jsonResponse(200, {

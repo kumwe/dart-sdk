@@ -4,13 +4,22 @@ import 'dart:io';
 import 'package:kumwe_sdk/kumwe_sdk.dart';
 import 'package:test/test.dart';
 
-KumweBusinessDefinition definition() {
+KumweBusinessDefinition definition({
+  bool immutableIssuedOn = false,
+  Map<String, Object?>? issuedOnSchema,
+}) {
   final source = File(
     'test/business/fixtures/invoice.business-definition.json',
   ).readAsStringSync();
-  return KumweBusinessDefinition.fromJson(
-    (jsonDecode(source) as Map).cast<String, Object?>(),
-  );
+  final decoded = (jsonDecode(source) as Map).cast<String, Object?>();
+  for (final field in decoded['fields']! as List<Object?>) {
+    final map = field! as Map<String, Object?>;
+    if (map['handle'] == 'issued_on') {
+      if (immutableIssuedOn) map['immutable_after_create'] = true;
+      if (issuedOnSchema != null) map['schema'] = issuedOnSchema;
+    }
+  }
+  return KumweBusinessDefinition.fromJson(decoded);
 }
 
 void main() {
@@ -60,14 +69,45 @@ void main() {
 
     test('a frozen field is refused on update only', () {
       final frozen = KumweJsonValue.from({'issued_on': '2026-08-25'});
-      // issued_on is not immutable; use a synthetic frozen check via the
-      // read-only sequence field which is also immutable_after_create.
+      final frozenValidator = KumweBusinessValueValidator(
+        definition(immutableIssuedOn: true),
+      );
       expect(
-        validator
-            .validate(frozen, phase: KumweWritePhase.update)
-            .where((violation) => violation.code == 'immutable-after-create'),
+        frozenValidator.validate(frozen, phase: KumweWritePhase.create),
         isEmpty,
       );
+      final refused = frozenValidator.validate(
+        frozen,
+        phase: KumweWritePhase.update,
+      );
+      expect(refused.single.code, 'immutable-after-create');
+      expect(refused.single.field, 'issued_on');
+    });
+
+    test('impossible dates are refused through the disclosed field schema', () {
+      final refused = validator.validate(
+        KumweJsonValue.from({'issued_on': '2025-02-29'}),
+        phase: KumweWritePhase.create,
+      );
+      expect(refused.single.code, 'schema');
+      expect(refused.single.field, 'issued_on');
+    });
+
+    test('an unevaluable disclosed schema refuses the field safely', () {
+      final invalidSchema = KumweBusinessValueValidator(
+        definition(issuedOnSchema: {'type': 'string', 'pattern': '['}),
+      );
+      final refused = invalidSchema.validate(
+        KumweJsonValue.from({'issued_on': 'synthetic-private-value'}),
+        phase: KumweWritePhase.create,
+      );
+      expect(refused.single.code, 'schema');
+      expect(refused.single.field, 'issued_on');
+      expect(
+        refused.single.message,
+        isNot(contains('synthetic-private-value')),
+      );
+      expect(refused.single.message, isNot(contains('[')));
     });
 
     test('a null where none is allowed is refused', () {
