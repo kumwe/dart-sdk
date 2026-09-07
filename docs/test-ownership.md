@@ -32,7 +32,7 @@ All seven findings are addressed in PR #7. The source-level review identified th
 2. `KumweClient.liveness()` and `KumweLiveness` had no caller/test anywhere; health probing is portable SDK behavior. Added success plus malformed product/status/non-200 refusal and anonymous configured-base routing. Readiness 200 and mismatched status/body are covered in the same bounded matrix.
 3. `business_value_validator_test.dart` test named “a frozen field is refused on update only” supplied a mutable `issued_on` and asserted no immutable violation. Corrected the fixture to make the field writable and immutable, proving create acceptance and update refusal.
 4. `KumweJsonValue._freeze` has depth 128 but direct tests proved cycles only. Added 128 acceptance and 129 refusal through public construction/parsing for array and object nesting.
-5. Independently replayed `date` and `date-time` validation with 2025-02-29 and 2026-04-31: all incorrectly returned `isValid=true`. Valid 2024-02-29 also passed. Added strict Gregorian calendar validation for both formats; broader clock/offset/leap-second qualification remains explicitly separate.
+5. Independently replayed `date` and `date-time` validation with 2025-02-29 and 2026-04-31: all incorrectly returned `isValid=true`. Root's bounded follow-up also reproduced accepted hour 25, minute 99, offset `+24:99` and absent timezone. Added strict Gregorian calendar and explicit clock/offset/timezone validation, exact byte consumption, fractional/lowercase preservation and offset-aware UTC month-end placement for second `60`. Actual historical or announced leap-second certification remains outside this validator; the precise supported grammar and limitation are recorded in [quality and conformance](quality-and-conformance.md).
 6. Independently replayed admitted schema `{type:object, properties:{a:{},b:{}}, additionalProperties:false, dependentSchemas:{a:{required:[b]}}}` against `{a:1}`: `isValid=true`. Added enforcement through the existing recursive validator, including absent trigger, null-present trigger and boolean refusal cases.
 7. Independently replayed business notes fragment `{type:string,maxLength:20,pattern:"["}`: malformed regex produced an empty business violation list because `_schemaViolations` swallowed `FormatException`. Now returns a visible schema refusal with no leaked input value or malformed pattern.
 
@@ -46,9 +46,9 @@ The remaining external requirements are explicit: real server authorization/rout
 
 ## Maintaining the inventory
 
-Local candidate verification used Dart 3.13.0: all 394 tests passed across 42
+Local candidate verification used Dart 3.13.0: all 397 tests passed across 42
 test files; strict analysis reported no issues; the contract validator accepted
-all 24 JSON documents. The 21 new tests and corrected immutable-field test run
+all 24 JSON documents. The 24 new tests and corrected immutable-field test run
 in package CI on Dart 3.8.0 and stable. Final per-commit CI evidence is attached
 to [PR #7](https://github.com/kumwe/dart-sdk/pull/7); passing local checks do not
 replace that matrix or the external requirements above.

@@ -71,8 +71,20 @@ Calendar checks follow the Gregorian month/year limits in
 [RFC 3339 section 5.7](https://www.rfc-editor.org/rfc/rfc3339#section-5.7),
 checking source fields before timezone conversion because
 [Dart date parsing normalizes overflow](https://api.dart.dev/dart-core/DateTime/parse.html).
-This repair does not certify the existing validator's entire clock, offset or
-leap-second grammar. Whole-object dependent-schema checks implement the
+Timestamp validation also enforces hours 00–23, minutes 00–59, seconds 00–60,
+optional dot followed by fractional digits, and a mandatory `Z`/`z` or signed
+`HH:MM` offset with the same hour/minute bounds. `T`/`t` is the separator.
+It rejects missing zones, overflow, basic/space/comma spellings and trailing
+bytes. Original strings, arbitrary fractional precision and `-00:00` are
+preserved; validation never converts the value to a normalized timestamp.
+
+Second `60` is accepted only when the preceding `59`, converted by the supplied
+offset, is UTC 23:59 on the last calendar day of a month. This preserves the
+RFC's offset-shifted leap-second examples while refusing impossible placement.
+The SDK does not consult IERS announcements or certify that an actual positive
+or negative leap occurred on that date. This is an explicit local validation
+limit, not complete historical timekeeping or protocol certification.
+Whole-object dependent-schema checks implement the
 [JSON Schema 2020-12 applicator](https://json-schema.org/draft/2020-12/json-schema-core#section-10.2.2.4).
 
 ## Contract fixtures

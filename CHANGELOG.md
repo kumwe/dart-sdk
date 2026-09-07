@@ -14,6 +14,9 @@
   These are client behavior tests, not evidence of server contract adoption.
 - Refuse impossible Gregorian dates and dependent-schema violations, and keep
   malformed field schemas from silently producing sendable business values.
+- Validate explicit timestamp clocks and zone offsets without overflow
+  normalization; preserve fractions and possible UTC month-end leap-second
+  spellings without claiming historical or announced leap-second validation.
 - Complete the public module test-ownership inventory; add exact JSON depth,
   health-probe and actual immutable-after-create boundary cases.
 

@@ -108,7 +108,10 @@ successful completion at the exact ceiling.
 
 Disclosed business schema fragments fail visibly if they cannot be evaluated,
 including malformed regular expressions. Calendar dates cannot pass by numeric
-normalization into another month, and present-key dependent schemas constrain
+normalization into another month; timestamp clocks require bounded components
+and explicit bounded zone offsets. Leap-second spellings require possible UTC
+month-end placement, with historical/announced-leap verification outside this
+local validator. Present-key dependent schemas constrain
 the whole object, including explicitly null triggering members. Client checks
 remain supplementary to server validation; their tests belong in the SDK.
 

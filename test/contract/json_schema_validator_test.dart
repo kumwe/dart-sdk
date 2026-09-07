@@ -4,6 +4,100 @@ import 'package:test/test.dart';
 void main() {
   final schemaUri = Uri.parse('file:///contracts/example.schema.json');
 
+  test(
+    'date-time refuses overflow, absent zones and ambiguous clock grammar',
+    () {
+      final schema = KumweJsonObject.from({
+        'type': 'string',
+        'format': 'date-time',
+      });
+      for (final value in [
+        '2026-01-01T25:00:00Z',
+        '2026-01-01T24:00:00Z',
+        '2026-01-01T00:99:00Z',
+        '2026-01-01T00:60:00Z',
+        '2026-01-01T00:00:61Z',
+        '2026-01-01T00:00:00+24:99',
+        '2026-01-01T00:00:00+24:00',
+        '2026-01-01T00:00:00-00:60',
+        '2026-01-01T00:00:00',
+        '2026-01-01T00:00Z',
+        '2026-01-01T000000Z',
+        '2026-01-01T00:00:00+0530',
+        '2026-01-01T00:00:00.Z',
+        '2026-01-01T00:00:00,5Z',
+        '2026-01-01 00:00:00Z',
+        '2026-01-01T00:00:00Z\n',
+        '2026-01-01T00:00:00Z\r\n',
+      ]) {
+        final result = const JsonSchemaContractValidator().validateInstance(
+          KumweJsonValue.from(value),
+          schema: schema,
+          schemaUri: schemaUri,
+        );
+        expect(result.isValid, isFalse, reason: value);
+      }
+    },
+  );
+
+  test(
+    'date-time preserves valid offsets, fractions and leap-second spellings',
+    () {
+      final schema = KumweJsonObject.from({
+        'type': 'string',
+        'format': 'date-time',
+      });
+      for (final value in [
+        '2026-01-01T00:00:00Z',
+        '2026-01-01t23:59:59z',
+        '2026-01-01T00:00:00-00:00',
+        '2026-01-01T23:59:59+23:59',
+        '2026-01-01T00:00:00-23:59',
+        '2026-01-01T00:00:00.123456789123456789+05:30',
+        '1985-04-12T23:20:50.52Z',
+        '1937-01-01T12:00:27.87+00:20',
+        '1990-12-31T23:59:60Z',
+        '1990-12-31T15:59:60-08:00',
+        '1991-01-01T05:29:60.5+05:30',
+        '2016-12-31T23:59:60-00:00',
+      ]) {
+        final instance = KumweJsonValue.from(value);
+        final result = const JsonSchemaContractValidator().validateInstance(
+          instance,
+          schema: schema,
+          schemaUri: schemaUri,
+        );
+        expect(result.isValid, isTrue, reason: value);
+        expect(
+          instance.value,
+          value,
+          reason: 'validation cannot rewrite the wire value',
+        );
+      }
+    },
+  );
+
+  test('leap-second syntax requires the final UTC minute of a month', () {
+    final schema = KumweJsonObject.from({
+      'type': 'string',
+      'format': 'date-time',
+    });
+    for (final value in [
+      '2016-12-15T23:59:60Z',
+      '2016-12-31T12:59:60Z',
+      '2016-12-31T23:00:60Z',
+      '2016-12-31T23:59:60+01:00',
+      '2017-01-01T00:59:60-01:00',
+    ]) {
+      final result = const JsonSchemaContractValidator().validateInstance(
+        KumweJsonValue.from(value),
+        schema: schema,
+        schemaUri: schemaUri,
+      );
+      expect(result.isValid, isFalse, reason: value);
+    }
+  });
+
   test('date formats refuse normalized impossible Gregorian dates', () {
     const validDates = [
       '0000-02-29',
