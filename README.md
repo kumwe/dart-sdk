@@ -1,78 +1,53 @@
 # Kumwe Dart SDK
 
-Contract-first Dart foundations for authenticated Kumwe clients, including Flutter applications for desktop,
-Android, and iOS.
+[![Dart SDK CI](https://github.com/kumwe/dart-sdk/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/kumwe/dart-sdk/actions/workflows/ci.yml)
+[![Dart](https://img.shields.io/badge/Dart-%3E%3D3.8%20%3C4.0-0175C2)](pubspec.yaml)
+[![Status](https://img.shields.io/badge/status-development%20foundation-blue)](docs/status.md)
 
-> [!IMPORTANT]
-> This repository is at **proposal/foundation stage**. It does not yet provide a production-ready client, and
-> the JSON documents under [`contracts/`](contracts/README.md) are not Kumwe core contracts. They become
-> authoritative only after adoption and compatibility protection in `kumwe/app`.
+Pure Dart transport and contract primitives for site-bound Kumwe clients, including Flutter desktop and mobile applications. The SDK translates server contracts into typed client operations while Core owns authority and business behavior.
 
-This work runs in parallel with the Kumwe core programme. It does not modify, supersede or supply evidence for
-core Version 2, Gate A or Gate B. It is preparatory design and conformance input for a **proposed Version 3 Native
-Client Platform**; that programme has not adopted the proposal merely because this repository exists. An eventual
-Version 3 core roadmap should add both a native-client contract/SDK-readiness gate and a final parity-qualification
-gate. Only core-owned adoption and qualification evidence could close those gates.
+## Availability
 
-The intended SDK has two deliberately separate planes:
+The source package is `kumwe_sdk`, currently `0.1.0-dev.6`; [pubspec.yaml](pubspec.yaml) is the version and dependency authority. Publication is disabled with `publish_to: none`. There is no published package or qualified production compatibility profile yet.
 
-1. an invariant, generated Dart API for versioned core REST resources; and
-2. a bounded runtime transport for policy-filtered business definitions and declarative client surfaces.
+The repository contains executable transport, business-resource models and operations, session lifecycle, exact-value and mutation primitives, runtime-cache values, proposal interpreters, tests and CI. Generated management resource clients and concrete native authorization endpoints still depend on Core contract adoption. See [current status](docs/status.md) and [the public client API](docs/client-api.md).
 
-That split lets ordinary API changes remain type-safe while extensions appear without shipping or executing
-extension-owned Dart code. See [ADR 0001](docs/decisions/0001-two-plane-sdk.md).
+The JSON documents under [contracts](contracts/README.md) remain proposals until Core adopts, versions and qualifies them. Passing SDK checks does not establish server support or native application parity.
 
-## What the audited core supports today
+## Development
 
-This baseline was prepared against `kumwe/app` commit
-`4e5083b3fe43790605ae5c6c5bf8e392f9822efc`.
+Use Dart 3.8 or later within the supported 3.x range:
 
-| Capability | Current assessment |
+```sh
+dart pub get
+dart format --output=none --set-exit-if-changed lib test tool
+dart analyze --fatal-infos
+dart test
+dart run tool/validate_contracts.dart contracts
+```
+
+CI tests the minimum Dart version and the current stable SDK; formatting is checked on stable. Consumers evaluating this unpublished source must select an explicit reviewed revision and supply their own transport, authorization and secure-storage integration. It is not a drop-in production client.
+
+## Contract with Core
+
+| Owner | Responsibility |
 | --- | --- |
-| Policy-filtered generated business discovery and CRUD | Available and suitable for a generic client |
-| Bounded search, relations, history, reports and exports | Available |
-| Strong business-record concurrency and retry primitives | Available, with contract inconsistencies to resolve |
-| Complete typed OpenAPI for every management operation | Not available |
-| Native user authorization flow | Not available |
-| Media, business-security and localization administration parity | Not available |
-| Declarative KIS/client-surface discovery | Not available; proposed here |
-| Headless public-site/theme parity | Not available |
-| Client change feed, realtime subscription and offline sync | Not available |
+| [Kumwe Core](https://github.com/kumwe/app) | REST/OpenAPI, authentication, authorization, business rules, persistence and authoritative runtime contracts |
+| Dart SDK | Typed transport and results, immutable context, protocol validation, bounded runtime interpretation and client conformance |
+| [Native client](https://github.com/kumwe/client) | Flutter presentation, navigation, platform adapters and application-owned credential storage |
 
-The detailed boundary is in [Core-facing requirements](docs/core-requirements.md). Documentation never treats a
-missing endpoint as implemented.
+The architecture keeps fixed resource generation separate from bounded runtime interpretation. Runtime extensions supply declarative data; the SDK must never execute extension-owned Dart, JavaScript, WASM or native code. Server denial, exact values, ETags, idempotency and authority boundaries remain intact.
 
-## Documentation map
+Read [architecture](docs/architecture.md), [contract lifecycle](docs/contract-lifecycle.md), [authentication and context](docs/authentication-and-context.md), and [security](docs/security.md).
 
-- [Vision, scope and non-goals](docs/vision-and-scope.md)
-- [Architecture](docs/architecture.md)
-- [Source of truth and contract lifecycle](docs/contract-lifecycle.md)
-- [Current foundation and target client-facing API](docs/client-api.md)
-- [Extension client surfaces](docs/extension-client-surfaces.md)
-- [Authentication and execution context](docs/authentication-and-context.md)
-- [Security model](docs/security.md)
-- [Compatibility and release policy](docs/compatibility-and-release.md)
-- [Quality and conformance](docs/quality-and-conformance.md)
-- [Current status](docs/status.md) and [six-month roadmap](docs/roadmap.md)
-- [Architecture decisions](docs/decisions/README.md)
-- [Draft machine contracts](contracts/README.md)
+## Compatibility and evidence
 
-The reference Flutter host is developed separately in [`kumwe/client`](https://github.com/kumwe/client). This
-package remains Flutter-independent and does not own that application's screen models, widgets, navigation, or
-platform adapters.
+The Core API audit is pinned to `kumwe/app@4e5083b3fe43790605ae5c6c5bf8e392f9822efc`. Its findings describe that revision; they are not a current audit of every subsequent Core release. [Core requirements](docs/core-requirements.md) records the evidence and unresolved contract dependencies.
 
-## Repository rules
+A supported SDK profile requires explicit Core versions, contract generations and conformance evidence under the [compatibility and release policy](docs/compatibility-and-release.md). SDK development versions and proposed wire-contract versions are separate identities. Offline synchronization requires a separately adopted profile.
 
-Start with [`AGENTS.md`](AGENTS.md) before contributing. In particular:
+## Contributing
 
-- do not hand-write claims that conflict with the pinned core contract;
-- do not introduce an executable extension mechanism into the client;
-- do not generate Dart from the caller-specific runtime OpenAPI document;
-- keep proposal contracts visibly non-authoritative until core adopts them; and
-- never collect a Kumwe password in this SDK.
+Start with [AGENTS.md](AGENTS.md), the [documentation index](docs/README.md), [quality and conformance](docs/quality-and-conformance.md), and [active roadmap](docs/roadmap.md). Preserve proposal status, public API boundaries and the distinction between observed behavior and requirements. Historical release changes remain in [CHANGELOG.md](CHANGELOG.md).
 
-## License and support
-
-No support or stability promise is made until the release gates in
-[Compatibility and release](docs/compatibility-and-release.md) are met. Licensing will follow the repository's
-published package metadata and release artifacts.
+Licensing and support must be established by the published package metadata and release artifacts before distribution; this repository currently contains no license declaration or supported release promise.
